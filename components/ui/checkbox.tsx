@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useId, type ChangeEvent, type ComponentProps } from 'react'
+import { useState, useId, type ReactNode, type ChangeEvent, type ComponentProps } from 'react'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface CheckboxProps extends Omit<ComponentProps<'input'>, 'type'> {
-  label?: string
+  label?: ReactNode
   description?: string
   error?: string
   wrapperClassName?: string

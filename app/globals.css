@@ -2,7 +2,7 @@
 
 /* ─── Static design tokens ──────────────────────────────────────────────── */
 @theme {
-  /* Color palette */
+  /* ── Dashboard / dark palette (default) ── */
   --color-background: #0A0A0A;
   --color-surface:    #111111;
   --color-card:       #181818;
@@ -21,16 +21,34 @@
   --color-warning:     #F59E0B;
   --color-info:        #3B82F6;
 
-  /* Border-radius scale */
-  --radius-xs:   0.25rem;   /* 4px  */
-  --radius-sm:   0.375rem;  /* 6px  */
-  --radius-md:   0.5rem;    /* 8px  */
-  --radius-lg:   0.75rem;   /* 12px */
-  --radius-xl:   1rem;      /* 16px */
-  --radius-2xl:  1.5rem;    /* 24px */
+  /* ── ScouttOpp brand palette (always-available tokens) ── */
+  --color-navy:       #2B3875;
+  --color-navy-deep:  #1e2850;
+  --color-indigo:     #6B5FAE;
+  --color-lavender:   #9B8DC4;
+  --color-lilac:      #C4B4E0;
+
+  --color-cream:      #F9F0E3;
+  --color-warm-white: #FDFAF6;
+  --color-vellum:     #F0E8D8;
+  --color-flax:       #D8CFC0;
+  --color-stone:      #8A8070;
+  --color-charcoal:   #2C2620;
+
+  --color-brand-success: #2D8A5E;
+  --color-brand-warning: #C47C1A;
+  --color-brand-error:   #C43A3A;
+
+  /* ── Border-radius scale ── */
+  --radius-xs:   0.25rem;
+  --radius-sm:   0.375rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.5rem;
   --radius-full: 9999px;
 
-  /* Shadow scale */
+  /* ── Shadow scale (dark) ── */
   --shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.5);
   --shadow-md:   0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
   --shadow-lg:   0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
@@ -38,10 +56,40 @@
   --shadow-glow: 0 0 24px rgb(124 58 237 / 0.35);
 }
 
-/* ─── Runtime-resolved tokens (Next.js font vars set via className) ─────── */
+/* ─── Runtime-resolved tokens ───────────────────────────────────────────── */
 @theme inline {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* ─── Light theme override ───────────────────────────────────────────────
+   Applied to any element with data-color-scheme="light".
+   All child components that reference CSS vars pick up these values
+   automatically — no component changes required.
+──────────────────────────────────────────────────────────────────────────── */
+[data-color-scheme="light"] {
+  --color-background:    #FDFAF6;
+  --color-surface:       #F9F0E3;
+  --color-card:          #FFFFFF;
+
+  --color-primary:       #2B3875;
+  --color-primary-hover: #1e2850;
+  --color-secondary:     #6B5FAE;
+
+  --color-foreground: #2C2620;
+  --color-muted:      #8A8070;
+  --color-border:     #D8CFC0;
+  --color-input:      #FFFFFF;
+
+  --color-destructive: #C43A3A;
+  --color-success:     #2D8A5E;
+  --color-warning:     #C47C1A;
+  --color-info:        #3B82F6;
+
+  /* Light shadows */
+  --shadow-sm: 0 1px 3px 0 rgb(43 56 117 / 0.08);
+  --shadow-md: 0 4px 12px -2px rgb(43 56 117 / 0.10);
+  --shadow-lg: 0 8px 24px -4px rgb(43 56 117 / 0.12);
 }
 
 /* ─── Base styles ───────────────────────────────────────────────────────── */
@@ -83,11 +131,59 @@ body {
 
 /* ─── Selection ─────────────────────────────────────────────────────────── */
 ::selection {
-  background: rgb(124 58 237 / 0.3);
+  background: rgb(107 95 174 / 0.2);
   color: var(--color-foreground);
 }
 
 /* ─── Keyframes ─────────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  100% { transform: translateX(100%); }
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-5px); }
+  30%       { transform: translateX(5px); }
+  45%       { transform: translateX(-4px); }
+  60%       { transform: translateX(4px); }
+  75%       { transform: translateX(-2px); }
+  90%       { transform: translateX(2px); }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgb(107 95 174 / 0.4); }
+  70%  { box-shadow: 0 0 0 8px rgb(107 95 174 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(107 95 174 / 0); }
+}
+
+@keyframes draw-stroke {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ─── Utility classes ───────────────────────────────────────────────────── */
+.animate-shake {
+  animation: shake 0.35s ease-out;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 0%,
+    var(--color-border)  50%,
+    var(--color-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton              { animation: none; background: var(--color-surface); }
+  .animate-shake         { animation: none; }
+  .animate-pulse-ring    { animation: none; }
 }

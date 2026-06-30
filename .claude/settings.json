@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(taskkill /PID 4736 /F 2>$null; Start-Sleep -Milliseconds 500; $procs = Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { taskkill /PID $_.OwningProcess /F 2>$null } }; Write-Host \"Cleared\")",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { taskkill /PID $_.OwningProcess /F 2>$null } }; Write-Host \"Killed\")",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue; if \\($procs\\) { $procs | ForEach-Object { taskkill /PID $_.OwningProcess /F 2>$null } }; cd \"C:\\\\Users\\\\Admin\\\\Documents\\\\scouttopp\"; npm run dev)",
+      "Bash(node -e \"const pkg=require\\('c:/Users/Admin/Documents/scouttopp/node_modules/next/package.json'\\); console.log\\(pkg.version\\)\")",
+      "PowerShell(node -e \"console.log\\(require\\('c:/Users/Admin/Documents/scouttopp/node_modules/react-hook-form/package.json'\\).version\\)\")",
+      "PowerShell(node -e \"const pkg=require\\('c:/Users/Admin/Documents/scouttopp/node_modules/react-hook-form/package.json'\\); console.log\\('version:', pkg.version, 'main:', pkg.main\\)\")",
+      "PowerShell(node -e \"const rhf = require\\('c:/Users/Admin/Documents/scouttopp/node_modules/react-hook-form/dist/index.cjs.js'\\); console.log\\(typeof rhf.useForm\\)\")",
+      "Bash(node -e \"const pkg=require\\('c:/Users/Admin/Documents/scouttopp/package.json'\\); console.log\\(JSON.stringify\\(pkg.scripts, null, 2\\)\\)\")",
+      "PowerShell(node -e \"console.log\\(require\\('c:/Users/Admin/Documents/scouttopp/node_modules/framer-motion/package.json'\\).version\\)\")",
+      "Bash(node \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Admin-Documents-scouttopp\\\\b978d0b9-de53-41e7-89c2-c7b1b6dfbb52\\\\scratchpad\\\\test-portfolio-bucket.mjs\")",
+      "Bash(cp \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Admin-Documents-scouttopp\\\\b978d0b9-de53-41e7-89c2-c7b1b6dfbb52\\\\scratchpad\\\\test-portfolio-bucket.mjs\" ./_diag_portfolio.mjs)",
+      "Bash(node ./_diag_portfolio.mjs)",
+      "Bash(rm ./_diag_portfolio.mjs)",
+      "Bash(ls next.config.*)",
+      "Bash(cat next.config.*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000 --max-time 3)",
+      "Bash(cp \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Admin-Documents-scouttopp\\\\b978d0b9-de53-41e7-89c2-c7b1b6dfbb52\\\\scratchpad\\\\test-portfolio-image.mjs\" ./_diag_img.mjs)",
+      "Bash(node ./_diag_img.mjs)",
+      "Bash(rm ./_diag_img.mjs)",
+      "Bash(npx eslint *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/dashboard/candidate/settings --max-time 10)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"port3001:%{http_code}\\\\n\" http://localhost:3001 --max-time 3)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{redirect_url}\\\\n\" http://localhost:3000/dashboard/candidate/settings --max-time 10)"
+    ]
+  }
+}

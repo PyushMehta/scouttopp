@@ -1,3 +1,11 @@
+import type { Metadata } from 'next'
+import { LoginForm } from '@/components/auth/login-form'
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description: 'Sign in to your ScouttOpp account.',
+}
+
 export default function LoginPage() {
-  return null
+  return <LoginForm />
 }
