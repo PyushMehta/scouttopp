@@ -59,7 +59,7 @@ export function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-14">
           <SectionHeader
-            eyebrow="The platform"
+            eyebrow="Features"
             heading="Everything you need to hire or get hired."
             subtext="Built for quality over quantity — from freshers to experienced professionals."
             light
