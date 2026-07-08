@@ -2,14 +2,16 @@
 
 import Link            from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, Building2, LogOut } from 'lucide-react'
 import { cn }          from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter }   from 'next/navigation'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const NAV_ITEMS = [
   { label: 'Overview',   href: '/dashboard/admin',            icon: LayoutDashboard },
   { label: 'Candidates', href: '/dashboard/admin/candidates', icon: Users },
+  { label: 'Employers',  href: '/dashboard/admin/employers',  icon: Building2 },
 ]
 
 export function AdminTopBar() {
@@ -51,10 +53,11 @@ export function AdminTopBar() {
             </Link>
           )
         })}
+        <ThemeToggle size={14} />
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-foreground hover:bg-white/5 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
         >
           <LogOut size={14} aria-hidden="true" />
           Sign out

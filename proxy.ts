@@ -2,6 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { getCanonicalRoute } from '@/lib/auth/machine'
 
+// Employer features are disabled in the Candidate Beta release.
+// Set NEXT_PUBLIC_EMPLOYER_ENABLED=true to re-enable.
+const EMPLOYER_ENABLED = process.env.NEXT_PUBLIC_EMPLOYER_ENABLED === 'true'
+
 /**
  * Routes that bypass all auth checks — always pass through.
  */
@@ -28,11 +32,39 @@ const UNAUTHED_PUBLIC = [
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Always pass through: static assets, Next.js internals, root redirect
+  // ── Employer feature gate ──────────────────────────────────────────────────
+  // When EMPLOYER_ENABLED is false (Candidate Beta), block employer routes so
+  // the code stays in the repo but remains inaccessible in production.
+  if (!EMPLOYER_ENABLED) {
+    if (
+      pathname.startsWith('/api/employer') ||
+      pathname.startsWith('/api/discovery')
+    ) {
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          error: { code: 'EMPLOYER_FEATURES_DISABLED', message: 'Employer features are not available in this release.' },
+        }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } },
+      )
+    }
+    if (pathname.startsWith('/dashboard/employer')) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
+  // Always pass through: static assets, Next.js internals, marketing pages
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
-    pathname === '/'
+    pathname === '/' ||
+    pathname.startsWith('/features') ||
+    pathname.startsWith('/about') ||
+    pathname.startsWith('/contact') ||
+    pathname.startsWith('/faq') ||
+    pathname.startsWith('/blog') ||
+    pathname.startsWith('/privacy') ||
+    pathname.startsWith('/terms')
   ) {
     return NextResponse.next({ request })
   }

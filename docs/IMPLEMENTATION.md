@@ -1,289 +1,374 @@
-# ScouttOpp — Implementation Progress Tracker
+# ScouttOpp — Implementation Status
+### Phase-by-Phase Progress Tracker
 
-> **Last updated:** 2026-06-30  
-> **Updated by:** Phase 2 implementation  
-> **Source of truth for specs:** Parts 1–4 (frozen) · `docs/DESIGN_SYSTEM.md`  
-> **Overall progress:** ~55%
-
----
-
-## Current Phase
-
-**Phase 2 — Supabase Integration & Authentication Architecture**  
-Status: ✅ **COMPLETE** — awaiting approval to begin Phase 3.
+> **Last updated:** 2026-07-05  
+> **Overall status:** v0.7.0 — **Candidate Beta live.** Employer features preserved in codebase, disabled in production via `NEXT_PUBLIC_EMPLOYER_ENABLED` flag. Phase 7 (Native Candidate Onboarding) is next.
 
 ---
 
-## Overall Progress
+## Phase Summary
 
-| Phase | Name | Status | % Done |
+| Phase | Name | Status | Version |
 |---|---|---|---|
-| 0 | Foundation | ✅ COMPLETE | 100% |
-| 1 | Auth Screens (UI only) | ✅ COMPLETE | 100% |
-| 2 | Supabase + Auth Machine | ✅ COMPLETE | 100% |
-| 3 | Google Sheets Sync + Admin | ⬜ NOT STARTED | 0% |
-| 4 | Candidate Dashboard | ⬜ NOT STARTED | 0% |
-| 5 | Native Onboarding (FUTURE) | 🔒 DEFERRED | — |
-| 6 | Swipe Feature (FUTURE) | 🔒 DEFERRED | — |
+| 0 | Foundation — design system, UI primitives | ✅ FROZEN | 0.1.0 |
+| 1 | Auth screens (UI only) | ✅ FROZEN | 0.1.0 |
+| 2 | Supabase + auth machine | ✅ FROZEN | 0.2.0 |
+| 3 | Google Sheets sync + admin dashboard | ✅ FROZEN | 0.3.0 |
+| 4 | Candidate dashboard v1 | ✅ FROZEN | 0.4.0 |
+| 5 | Public marketing website + Employer Dashboard MVP | ✅ FROZEN | 0.5.0 |
+| 5C | Employer Dashboard Foundation — full nav shell, analytics, notifications, candidates/matches/messages | ✅ FROZEN | 0.5.1 |
+| 6 | Employer Discovery Engine — discovery feed, save/pass, filters, profile panel, notes | ✅ FROZEN | 0.6.0 |
+| 6.5 | Architecture Refinement — multi-role, pass logic, completeness gate, portfolio links, Scout branding | ✅ FROZEN | 0.6.5 |
+| 6.6 | Scout Mode UI — Hinge-style stacked card deck, drag gestures, portfolio carousel, filter pre-flight | ✅ FROZEN | 0.6.6 |
+| **Beta** | **Candidate Beta Launch** — employer feature flag, candidate-focused landing, Founding Creative UX | **🚀 LIVE** | **0.7.0** |
+| 7 | Native candidate onboarding | 🔒 NOT STARTED | — |
+| 8 | Swipe discovery engine | 🔒 NOT STARTED | — |
+| 9 | Messaging | 🔒 NOT STARTED | — |
+| 10 | AI matching | 🔒 NOT STARTED | — |
+| 11 | Production readiness (incl. Employer Beta re-enable) | 🔒 NOT STARTED | — |
 
 ---
 
-## Phase 1 — Auth Screens `COMPLETE`
+## Phase 6.6 — Scout Mode UI `FROZEN`
 
-### All Auth Routes
+### New Components
 
-| Screen | Route | Component | Status | Notes |
-|---|---|---|---|---|
-| Login | `/auth/login` | `login-form.tsx` | ✅ Done | Zod, shake animation, credential error, Google OAuth stub |
-| Signup | `/auth/signup` | `signup-form.tsx` | ✅ Done | Password strength, invite code expander, terms checkbox |
-| Verify Email | `/auth/verify-email` | `verify-email-prompt.tsx` | ✅ Done | Resend cooldown (60s), success banner, email from searchParams |
-| Role Select | `/auth/role-select` | `role-select-form.tsx` | ✅ Done | Animated radio cards, disabled continue until selected |
-| Forgot Password | `/auth/forgot-password` | `forgot-password-form.tsx` | ✅ Done | Inline success view (no page change), Zod validation |
-| Reset Password | `/auth/reset-password` | `reset-password-form.tsx` | ✅ Done | 3 states: invalid token / form / success; PasswordStrength reused |
-| Rejected | `/auth/rejected` | `rejected-screen.tsx` | ✅ Done | Static Server Component, mailto CTA |
-| Suspended | `/auth/suspended` | `suspended-screen.tsx` | ✅ Done | Static Server Component, warning-tinted, mailto CTA |
-| Confirm | `/auth/confirm` | page (Server) | ✅ Done | Server-side redirect to `/api/auth/callback` passing code + type params |
-| Pending | `/auth/pending` | `pending-screen.tsx` | ✅ Done | PENDING_APPROVAL state — shows review steps, email from server session |
+| File | Exports | Purpose |
+|---|---|---|
+| `components/discovery/scout-card.tsx` | `ScoutCard`, `StaticCardPreview`, `CardPortfolioItem` | Draggable candidate card with drag gestures, rotation overlays, portfolio carousel |
+| `components/discovery/scout-deck.tsx` | `ScoutDeck` | Stacked card deck; manages local stack, portfolio pre-fetch, undo history, load-more trigger |
+| `components/discovery/scout-actions.tsx` | `ScoutActions` | Standalone Pass / Undo / Scout action bar |
+| `components/discovery/scout-filter-sheet.tsx` | `ScoutFilterSheet` | Right-side filter Drawer with draft state; confirms on "Start Scouting" |
+| `components/discovery/scout-mode.tsx` | `ScoutMode` | Orchestrator; pre-flight landing → scouting deck; calls save/pass APIs; opens CandidateProfilePanel |
 
-### Phase 1 TypeScript status
-`npx tsc --noEmit` → **0 errors** ✅
+### Modified Files
+
+| File | Change |
+|---|---|
+| `components/discovery/filter-panel.tsx` | `FilterContent` exported; `ROLES` array updated to PRESET_ROLES text values |
+| `app/dashboard/employer/candidates/page.tsx` | Replaced `DiscoveryFeed` with `ScoutMode`; title updated |
+
+### Interaction Model
+
+| Gesture / Action | Threshold | Result |
+|---|---|---|
+| Drag right | offset > 90px or velocity > 450px/s | Scout (save) |
+| Drag left | offset < −90px or velocity < −450px/s | Pass |
+| Release inside threshold | — | Spring return to center |
+| Scout button | — | `forceDismiss='scout'` on active card |
+| Pass button | — | `forceDismiss='pass'` on active card |
+| Undo button | — | Re-inserts last dismissed card at top of stack |
+
+### TypeScript Status (current freeze)
+
+| Area | Status |
+|---|---|
+| Phase 6.6 (current freeze) | ✅ 0 errors (`tsc --noEmit`) |
+| Phase 6.5 | ✅ 0 errors |
+| Phase 6 | ✅ 0 errors |
 
 ---
 
-## Phase 2 — Supabase + Auth Machine `COMPLETE`
+## Phase 6.5 — Architecture Refinement `FROZEN`
+
+### What Changed
+
+#### Database (migration `20260701000002_phase6_5_arch.sql`)
+
+| Change | Detail |
+|---|---|
+| `candidate_profiles.primary_role` | Migrated from `candidate_role_enum` → `TEXT`; supports custom role labels beyond preset list |
+| `candidate_profiles.profile_completeness` | Added `SMALLINT NOT NULL DEFAULT 0`; computed 0–100 score updated by `lib/candidate-completeness.ts` |
+| `candidate_roles` table | Relational multi-role table; partial UNIQUE index on primary flag |
+| `candidate_portfolio_links` table | External portfolio links (Behance, Dribbble, YouTube, Vimeo, GitHub, Instagram, PDF, website, other) |
+| `employer_passed_candidates.pass_type` | `'temporary'` (30-day, default) or `'forever'` (permanent hide) |
+| `employer_passed_candidates.expires_at` | `now() + 30 days` for temp; null for forever |
+| `employer_passed_candidates.candidate_updated_at` | Snapshot at pass time; re-eligibility when candidate updates profile |
+| `swipe_action_enum` | Added `'scout'` value; `'like'` kept for legacy compatibility |
+
+#### New Files
+
+| File | Purpose |
+|---|---|
+| `lib/candidate-completeness.ts` | `computeCompleteness`, `updateCompleteness`, `meetsDiscoveryThreshold` |
+| `supabase/migrations/20260701000002_phase6_5_arch.sql` | Idempotent Phase 6.5 migration |
+
+#### Updated Files
+
+| File | Change |
+|---|---|
+| `constants/index.ts` | Added `PRESET_ROLES` (15 labels), `MIN_DISCOVERY_COMPLETENESS = 0` |
+| `app/api/discovery/route.ts` | Smart pass exclusion; role filter via `candidate_roles`; `profile_completeness` + `roles` in payload |
+| `app/api/discovery/pass/route.ts` | `forever` flag; writes `pass_type`, `expires_at`, `candidate_updated_at` |
+| `lib/supabase/types.ts` | `primary_role: string | null`; `profile_completeness`; new table types; `SwipeActionEnum` + `'scout'` |
+| `services/sync-mapper.ts` | `primary_role: string | null`; `ROLE_MAP: Record<string, string>` |
+| `services/admin.service.ts` | Removed `CandidateRoleEnum` cast |
+| `app/api/candidate/profile/route.ts` | `primary_role: z.string().max(100).nullable()` |
+| `components/dashboard/candidate/profile-form.tsx` | `primary_role: string | null`; uses `PRESET_ROLES` |
+
+#### Completeness Criteria (0–100)
+
+| Criterion | Weight |
+|---|---|
+| Avatar set | 15 |
+| Bio ≥ 50 chars | 15 |
+| At least one role in `candidate_roles` | 15 |
+| `candidate_specialties` count ≥ 3 | 15 |
+| Portfolio item OR portfolio link exists | 20 |
+| City + country set | 10 |
+| `candidate_preferences` row exists | 10 |
+
+`MIN_DISCOVERY_COMPLETENESS = 0` in dev — raise to `60` before launch.
+
+#### Pass Exclusion Logic
+
+```
+forever pass  → always excluded (until employer explicitly un-hides — future feature)
+temp pass     → excluded if expires_at > now() AND candidate.updated_at ≤ pass.candidate_updated_at
+              → re-eligible if expires_at ≤ now() (30 days elapsed) OR candidate updated since pass
+```
+
+#### Branding Rule
+
+"Scout" (not "Like") in all new UI and copy. `swipe_action_enum` keeps `'like'` for DB compatibility.
+
+---
+
+## Phase 4 — Candidate Dashboard v1 `FROZEN`
+
+### Dashboard Routes
+
+| Route | File | Status |
+|---|---|---|
+| `/dashboard/candidate` | `app/dashboard/candidate/page.tsx` | ✅ |
+| `/dashboard/candidate/profile` | `app/dashboard/candidate/profile/page.tsx` | ✅ |
+| `/dashboard/candidate/portfolio` | `app/dashboard/candidate/portfolio/page.tsx` | ✅ |
+| `/dashboard/candidate/settings` | `app/dashboard/candidate/settings/page.tsx` | ✅ |
+
+### Features
+
+| Feature | Key Files | Status |
+|---|---|---|
+| Dashboard home — completion %, status card, quick-nav, Coming Soon | `app/dashboard/candidate/page.tsx` | ✅ |
+| Editable profile — personal info, bio, role, links | `app/dashboard/candidate/profile/page.tsx`, `components/dashboard/candidate/profile-form.tsx` | ✅ |
+| Avatar upload — `avatars` bucket, signed URL | `components/dashboard/candidate/avatar-upload.tsx`, `app/api/candidate/avatar/route.ts` | ✅ |
+| Portfolio — add/edit/delete/reorder, `portfolio` bucket | `app/dashboard/candidate/portfolio/page.tsx`, `components/dashboard/candidate/portfolio-grid.tsx`, `components/dashboard/candidate/portfolio-item-modal.tsx` | ✅ |
+| Work preferences — remote/onsite/hybrid, rate, availability | `components/dashboard/candidate/preferences-form.tsx`, `app/api/candidate/preferences/route.ts` | ✅ |
+| Discovery visibility toggle — instant auto-save | `components/dashboard/candidate/visibility-section.tsx`, `app/api/candidate/visibility/route.ts` | ✅ |
+| Password change — re-auth before update | `components/dashboard/candidate/account-settings.tsx` | ✅ |
+| Account deletion — type-to-confirm, cascade delete | `components/dashboard/candidate/danger-zone.tsx`, `app/api/candidate/account/route.ts` | ✅ |
+
+### API Routes Added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/candidate/profile` | Candidate | Fetch own profile |
+| PATCH | `/api/candidate/profile` | Candidate | Update personal info, links |
+| POST | `/api/candidate/avatar` | Candidate | Upload avatar (multipart/form-data, max 5 MB) |
+| GET | `/api/candidate/portfolio` | Candidate | List portfolio items (sorted by sort_order) |
+| POST | `/api/candidate/portfolio` | Candidate | Add portfolio item (max 12 enforced) |
+| PATCH | `/api/candidate/portfolio/[id]` | Candidate | Edit portfolio item |
+| DELETE | `/api/candidate/portfolio/[id]` | Candidate | Remove portfolio item |
+| POST | `/api/candidate/portfolio/reorder` | Candidate | Persist drag-and-drop order |
+| POST | `/api/candidate/portfolio/upload` | Candidate | Upload media file (max 20 MB) |
+| GET | `/api/candidate/preferences` | Candidate | Fetch work preferences |
+| PATCH | `/api/candidate/preferences` | Candidate | Update work preferences (upsert) |
+| PATCH | `/api/candidate/visibility` | Candidate | Toggle `discovery_paused` |
+| DELETE | `/api/candidate/account` | Candidate | Delete account (cascade via `auth.admin.deleteUser`) |
+
+### Components Added
+
+| Component | Purpose |
+|---|---|
+| `components/dashboard/candidate-sidebar.tsx` | Left nav |
+| `components/dashboard/candidate-topbar.tsx` | Top bar |
+| `components/dashboard/candidate-actions.tsx` | Shared action helpers |
+| `components/dashboard/candidate/profile-form.tsx` | Editable profile form |
+| `components/dashboard/candidate/avatar-upload.tsx` | Avatar upload + preview |
+| `components/dashboard/candidate/portfolio-grid.tsx` | Draggable grid |
+| `components/dashboard/candidate/portfolio-item-modal.tsx` | Add/edit modal |
+| `components/dashboard/candidate/preferences-form.tsx` | Work preferences |
+| `components/dashboard/candidate/visibility-section.tsx` | Discovery toggle |
+| `components/dashboard/candidate/account-settings.tsx` | Email display + change password |
+| `components/dashboard/candidate/danger-zone.tsx` | Delete account modal |
+
+### Constants Enforced
+
+| Constant | Value | Where |
+|---|---|---|
+| `MAX_PORTFOLIO_ITEMS` | 12 | `POST /api/candidate/portfolio` returns 422 when count ≥ 12 |
+| `MAX_SPECIALTIES` | 10 | UI only (API enforcement deferred to Phase 7) |
+
+---
+
+## Phase 5 — Public Marketing Website + Employer Dashboard MVP `FROZEN`
+
+### Marketing Routes
+
+| Route | File | Status |
+|---|---|---|
+| `/` | `app/(marketing)/page.tsx` | ✅ |
+| `/sitemap.xml` | `app/sitemap.ts` | ✅ |
+| `/robots.txt` | `app/robots.ts` | ✅ |
+
+### Employer Dashboard Routes
+
+| Route | File | Status |
+|---|---|---|
+| `/dashboard/employer` | `app/dashboard/employer/page.tsx` | ✅ |
+| `/dashboard/employer/profile` | `app/dashboard/employer/profile/page.tsx` | ✅ |
+| `/dashboard/employer/settings` | `app/dashboard/employer/settings/page.tsx` | ✅ |
+
+### Features
+
+| Feature | Key Files | Status |
+|---|---|---|
+| Home page — hero, features, how-it-works, early access, social proof, CTA | `app/(marketing)/page.tsx`, `components/marketing/` | ✅ |
+| Marketing nav (glassmorphism on scroll, mobile drawer) | `components/marketing/marketing-nav.tsx` | ✅ |
+| Marketing footer (4-col, inline SVG socials) | `components/marketing/marketing-footer.tsx` | ✅ |
+| Employer dashboard home — company card, completion tracker, quick-nav | `app/dashboard/employer/page.tsx` | ✅ |
+| Company profile form — logo upload, info, links, location | `components/dashboard/employer/company-form.tsx` | ✅ |
+| Hiring preferences — role chips multi-select, toggles, budget, urgency | `components/dashboard/employer/hiring-form.tsx` | ✅ |
+| Logo upload — `avatars` bucket, `employer-logos/{id}/logo.{ext}` | `components/dashboard/employer/logo-upload.tsx` | ✅ |
+| Settings — password (reuses `AccountSettings`), notifications, danger zone | `app/dashboard/employer/settings/page.tsx` | ✅ |
+| Notification preferences — real-time toggle auto-save | `components/dashboard/employer/employer-notifications.tsx` | ✅ |
+| Account deletion — type-to-confirm, cascade delete | `components/dashboard/employer/employer-danger-zone.tsx` | ✅ |
+
+### API Routes Added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/employer/profile` | Employer | Fetch company profile |
+| PATCH | `/api/employer/profile` | Employer | Update company info, links, location |
+| POST | `/api/employer/logo` | Employer | Upload company logo (max 5 MB) |
+| GET | `/api/employer/hiring` | Employer | Fetch hiring preferences |
+| PATCH | `/api/employer/hiring` | Employer | Upsert hiring prefs (roles, work types, budget, urgency) |
+| GET | `/api/employer/preferences` | Employer | Fetch notification preferences |
+| PATCH | `/api/employer/preferences` | Employer | Upsert notification preferences |
+| DELETE | `/api/employer/account` | Employer | Delete account (cascade via `auth.admin.deleteUser`) |
+
+### DB Changes
+
+- `supabase/migrations/20260630000003_employer_profile_fields.sql` — added `linkedin_url TEXT`, `founded_year SMALLINT` to `employer_profiles`
+- `lib/supabase/types.ts` — `employer_profiles` Row/Insert/Update updated
+
+---
+
+## Phase 3 — Google Sheets Sync + Admin Dashboard `FROZEN`
+
+### Services
+
+| File | Purpose |
+|---|---|
+| `services/sheets.service.ts` | Google Sheets API via RS256 JWT (no googleapis package) |
+| `services/sync-mapper.ts` | Flexible column-matching; normalises roles to `candidate_role_enum` |
+| `services/admin.service.ts` | `approveCandidate`, `rejectCandidate`, `suspendUser`, `reinstateUser` |
+
+### API Routes
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | `/api/sync/run` | Admin | Trigger Google Sheets sync → `candidate_sync_staging` |
+| GET | `/api/sync/status/[runId]` | Admin | Poll sync run status |
+| GET | `/api/admin/candidates` | Admin | List staging/canonical candidates (filter, search, paginate) |
+| GET | `/api/admin/candidates/[id]` | Admin | Full candidate detail |
+| POST | `/api/admin/candidates/[id]/approve` | Admin | Promote staging → `candidate_profiles` + Supabase invite |
+| POST | `/api/admin/candidates/[id]/reject` | Admin | Set `auth_state = REJECTED` |
+| POST | `/api/admin/users/[id]/suspend` | Admin | Set `auth_state = SUSPENDED` |
+| POST | `/api/admin/users/[id]/reinstate` | Admin | Set `auth_state = APPROVED` |
+
+### Dashboard Pages
+
+| Route | Status |
+|---|---|
+| `/dashboard/admin` | ✅ Overview page with stats |
+| `/dashboard/admin/candidates` | ✅ List with filter/search |
+| `/dashboard/admin/candidates/[id]` | ✅ Detail + approve/reject/suspend actions |
+
+### Auth Guard
+
+`lib/auth/require-admin.ts` — checks `profiles.role = 'admin'`, returns 401/403 if not.
+
+---
+
+## Phase 2 — Supabase + Auth Machine `FROZEN`
 
 ### Files Created
 
 | File | Purpose |
 |---|---|
-| `.env.local.example` | Environment variable template |
-| `lib/supabase/types.ts` | Hand-authored DB TypeScript types matching schema |
-| `lib/supabase/client.ts` | Browser Supabase client (`createBrowserClient` from `@supabase/ssr`) |
-| `lib/supabase/server.ts` | Server Supabase client (`createServerClient` + service role variant) |
-| `lib/supabase/middleware.ts` | `updateSession()` — token refresh + user extraction for middleware |
-| `lib/auth/machine.ts` | Auth state machine: `ALLOWED_TRANSITIONS`, `STATE_ROUTES`, `getCanonicalRoute()` |
-| `lib/validations.ts` | Zod v4 schemas: login, signup, forgotPassword, resetPassword, inviteCode |
-| `lib/hooks/use-auth.ts` | Client hook: `useAuth()` + `signOutClient()` |
-| `types/index.ts` | Re-exports all types, `Profile` convenience alias |
-| `constants/index.ts` | `APP_URL`, `ROUTES`, `RESEND_COOLDOWN_SECONDS`, `AUTH_CALLBACK_PATH` |
-| `middleware.ts` | Route protection: state-machine-aware redirect logic, `getUser()` (not `getSession()`) |
-| `services/auth.service.ts` | Server-side auth operations: signIn, signUp, OAuth, password reset, resend |
-| `app/api/auth/callback/route.ts` | PKCE code exchange → session → canonical redirect (or `/auth/reset-password` for recovery) |
-| `app/api/auth/role/route.ts` | `POST /api/auth/role` — validates + executes `VERIFIED_NO_ROLE → PENDING_APPROVAL` transition |
-| `app/api/invite/validate/route.ts` | `POST /api/invite/validate` — case-insensitive code check, use count, expiry |
-| `components/auth/pending-screen.tsx` | PENDING_APPROVAL UI — "you're on the list" with review steps |
-| `app/auth/pending/page.tsx` | Server Component — fetches user email, renders `PendingScreen` |
+| `lib/supabase/client.ts` | Browser client (`createBrowserClient`) |
+| `lib/supabase/server.ts` | Server client + service role variant |
+| `lib/supabase/middleware.ts` | `updateSession()` for proxy |
+| `lib/supabase/types.ts` | Hand-authored TypeScript types matching schema |
+| `lib/auth/machine.ts` | `ALLOWED_TRANSITIONS`, `STATE_ROUTES`, `getCanonicalRoute()` |
+| `lib/auth/require-admin.ts` | Admin API auth guard |
+| `lib/auth/require-candidate.ts` | Candidate API auth guard |
+| `lib/validations.ts` | Zod v4 schemas: login, signup, forgotPassword, resetPassword, inviteCode, changePassword |
+| `lib/hooks/use-auth.ts` | `useAuth()` + `signOutClient()` |
+| `constants/index.ts` | `APP_NAME`, `APP_URL`, `SUPPORT_EMAIL`, `ROUTES`, `MAX_PORTFOLIO_ITEMS = 12`, `MAX_SPECIALTIES = 10`, `RESEND_COOLDOWN_SECONDS = 60` |
+| `proxy.ts` | State-machine-aware route guard. Exports `proxy` (not `middleware`). |
+| `services/auth.service.ts` | Server-side auth operations |
+| `app/api/auth/callback/route.ts` | PKCE code exchange; invite acceptance links `user_id` |
+| `app/api/auth/role/route.ts` | `VERIFIED_NO_ROLE → PENDING_APPROVAL` transition |
+| `app/api/invite/validate/route.ts` | Invite code check (case-insensitive, uses, expiry) |
 | `supabase/migrations/20260630000000_initial_schema.sql` | All enums, tables, triggers, indexes |
-| `supabase/migrations/20260630000001_rls_policies.sql` | All RLS policies (deny-by-default) |
+| `supabase/migrations/20260630000001_rls_policies.sql` | Deny-by-default RLS |
+| `.env.local.example` | Environment variable template |
 
-### Files Modified
+### Auth Machine States
 
-| File | Changes |
+| State | Canonical Route |
 |---|---|
-| `components/auth/login-form.tsx` | Wired `supabase.auth.signInWithPassword()` + Google OAuth + `router.refresh()` |
-| `components/auth/signup-form.tsx` | Wired invite code validation, `supabase.auth.signUp()`, Google OAuth |
-| `components/auth/verify-email-prompt.tsx` | Wired `supabase.auth.resend()` with 60s cooldown |
-| `components/auth/forgot-password-form.tsx` | Wired `supabase.auth.resetPasswordForEmail()` with PKCE redirect |
-| `components/auth/reset-password-form.tsx` | Redesigned: removed `token` prop, client-side session check, `supabase.auth.updateUser()` |
-| `components/auth/role-select-form.tsx` | Wired `POST /api/auth/role`, follows `redirectTo` from response |
-| `app/auth/confirm/page.tsx` | Server-side redirect to `/api/auth/callback` passing URL params |
-| `app/auth/reset-password/page.tsx` | Removed obsolete `searchParams` extraction (no `token` prop) |
-
-### Phase 2 TypeScript status
-`npx tsc --noEmit` → **0 errors** ✅
+| `UNVERIFIED` | `/auth/verify-email` |
+| `VERIFIED_NO_ROLE` | `/auth/role-select` |
+| `ONBOARDING` | `/onboarding` (Phase 7) |
+| `PENDING_APPROVAL` | `/auth/pending` |
+| `APPROVED` | `/dashboard/<role>` |
+| `REJECTED` | `/auth/rejected` |
+| `SUSPENDED` | `/auth/suspended` |
+| `INVITED` | `/auth/role-select` |
 
 ---
 
-## Phase 0 — Foundation `COMPLETE`
+## Phase 1 — Auth Screens `FROZEN`
 
-### Files Created / Modified
-| File | Status | Notes |
-|---|---|---|
-| `app/globals.css` | ✅ Modified | Brand tokens, light-theme override, keyframes, `.animate-shake`, `.skeleton` |
-| `app/layout.tsx` | ✅ Modified | Switched Geist → Plus Jakarta Sans (`--font-plus-jakarta-sans`) |
-| `app/page.tsx` | ✅ Created | Root redirect → `/auth/login` |
-| `components/ui/button.tsx` | ✅ Exists | Framer Motion, CSS vars, variant/size map |
-| `components/ui/input.tsx` | ✅ Exists | `useId()`, aria-describedby, error state |
-| `components/ui/password-input.tsx` | ✅ Exists | Wraps Input, Eye/EyeOff toggle |
-| `components/ui/checkbox.tsx` | ✅ Modified | Widened `label` prop: `string` → `ReactNode` |
-| `components/ui/badge.tsx` | ✅ Exists | — |
-| `components/ui/textarea.tsx` | ✅ Exists | — |
-| `components/ui/select.tsx` | ✅ Exists | — |
-| `components/ui/radio.tsx` | ✅ Exists | — |
-| `components/ui/card.tsx` | ✅ Exists | — |
-| `components/ui/avatar.tsx` | ✅ Exists | — |
-| `components/ui/spinner.tsx` | ✅ Exists | — |
-| `components/ui/skeleton.tsx` | ✅ Exists | — |
-| `components/ui/toast.tsx` | ✅ Exists | — |
-| `components/ui/drawer.tsx` | ✅ Exists | — |
-| `components/ui/modal.tsx` | ✅ Exists | — |
-| `components/ui/tabs.tsx` | ✅ Exists | — |
-| `components/ui/tooltip.tsx` | ✅ Exists | — |
-| `components/ui/divider.tsx` | ✅ Exists | — |
-| `components/ui/search-input.tsx` | ✅ Exists | — |
-| `components/ui/page-transition.tsx` | ✅ Exists | — |
-| `components/ui/index.ts` | ✅ Exists | Barrel exports |
-| `components/layout/navbar.tsx` | ✅ Exists | — |
-| `components/layout/footer.tsx` | ✅ Exists | — |
-| `components/layout/container.tsx` | ✅ Exists | — |
-| `components/layout/section.tsx` | ✅ Exists | — |
-| `components/layout/index.ts` | ✅ Exists | Barrel exports |
-| `lib/utils.ts` | ✅ Exists | `cn()` — clsx + tailwind-merge |
-| `lib/tokens.ts` | ✅ Exists | Animation tokens, transitions, variants |
-| `lib/supabase.ts` | ⚠️ Empty | Stub file — real implementation Phase 2 |
-| `lib/validations.ts` | ⚠️ Empty | Stub file — real implementation Phase 2+ |
-
----
-
-## Folder Structure Status
-
-```
-app/
-  (marketing)/
-    layout.tsx          ✅ exists
-    page.tsx            ✅ exists
-  auth/
-    layout.tsx          ✅ exists — two-panel shell (42% navy / 58% warm-white)
-    login/page.tsx      ✅ exists
-    signup/page.tsx     ✅ exists
-    verify-email/page.tsx  ✅ exists
-    confirm/page.tsx       ✅ exists (placeholder)
-    role-select/page.tsx   ✅ exists
-    forgot-password/page.tsx  ✅ exists
-    reset-password/page.tsx   ✅ exists
-    rejected/page.tsx      ✅ exists
-    suspended/page.tsx     ✅ exists
-  dashboard/
-    candidate/page.tsx  ⚠️ stub (return null) — Phase 4
-    employer/page.tsx   ⚠️ stub (return null) — Phase 4
-    admin/page.tsx      ⚠️ stub (return null) — Phase 6
-  globals.css           ✅ complete
-  layout.tsx            ✅ complete
-  page.tsx              ✅ root redirect
-
-components/
-  auth/
-    brand-panel.tsx           ✅ Server Component, navy left panel
-    google-button.tsx         ✅ Inline SVG Google logo, loading state
-    auth-divider.tsx          ✅ Reusable "or" separator
-    login-form.tsx            ✅ Full form, Zod, shake, credential error
-    signup-form.tsx           ✅ Password strength, invite code expander, terms
-    password-strength.tsx     ✅ 4-segment animated bar, 5 states
-    verify-email-prompt.tsx   ✅ Resend cooldown, success banner
-    role-select-form.tsx      ✅ Animated radio cards, keyboard accessible
-    forgot-password-form.tsx  ✅ Form + inline success view
-    reset-password-form.tsx   ✅ Invalid token / form / success states
-    rejected-screen.tsx       ✅ Static Server Component
-    suspended-screen.tsx      ✅ Static Server Component
-  ui/                   ✅ all primitives exist
-  layout/               ✅ all layout components exist
-
-lib/
-  utils.ts              ✅ complete
-  tokens.ts             ✅ complete
-  supabase.ts           ⚠️ empty stub — Phase 2
-  validations.ts        ⚠️ empty stub — Phase 2+
-
-store/                  ⬜ not created (Phase 5 — DEFERRED)
-middleware.ts           ⬜ not created (Phase 2)
-```
-
----
-
-## Database Status
-
-| Status | Notes |
+| Screen | Route |
 |---|---|
-| ⬜ NOT CREATED | Supabase project not yet connected |
-
-### Schema Designed (ready to deploy in Phase 2):
-- `profiles` — core auth state machine row per user
-- `candidate_sync_staging` — Google Sheets sync transit layer
-- `sync_runs` — audit log of sync executions
-- `candidate_profiles` — canonical candidate data (compatible with future native onboarding)
-- `candidate_specialties` — candidate skills
-- `candidate_portfolio_items` — portfolio entries
-- `candidate_preferences` — work preferences
-- `employer_profiles` — employer data
-- `employer_hiring_profiles` — hiring details
-- `employer_showcase_items` — company culture content
-- `employer_preferences` — hiring preferences
-- `invite_codes` — signup invite codes
-- `swipe_actions` — FUTURE (defined now, empty)
-- `matches` — FUTURE (defined now, empty)
+| Login | `/auth/login` |
+| Signup | `/auth/signup` |
+| Verify Email | `/auth/verify-email` |
+| Role Select | `/auth/role-select` |
+| Confirm (callback) | `/auth/confirm` |
+| Forgot Password | `/auth/forgot-password` |
+| Reset Password | `/auth/reset-password` |
+| Pending | `/auth/pending` |
+| Rejected | `/auth/rejected` |
+| Suspended | `/auth/suspended` |
 
 ---
 
-## API Status
+## Phase 0 — Foundation `FROZEN`
 
-| Route | Method | Status | Phase |
-|---|---|---|---|
-| `/api/auth/callback` | GET | ⬜ Not created | 2 |
-| `/api/invite/validate` | POST | ⬜ Not created | 2 |
-| `/api/sync/run` | POST | ⬜ Not created | 3 |
-| `/api/sync/status/[runId]` | GET | ⬜ Not created | 3 |
-| `/api/admin/candidates` | GET | ⬜ Not created | 3 |
-| `/api/admin/candidates/[id]/approve` | POST | ⬜ Not created | 3 |
-| `/api/admin/candidates/[id]/reject` | POST | ⬜ Not created | 3 |
+All UI primitives in `components/ui/`:  
+`Button`, `Input`, `PasswordInput`, `Checkbox`, `Select`, `Textarea`, `Radio`, `Card` (+sub-components), `Badge`, `Avatar` + `AvatarGroup`, `Modal`, `Drawer`, `Tabs`, `Tooltip`, `Divider`, `SearchInput`, `Spinner`, `Skeleton`, `Toast`, `PageTransition`
+
+`lib/tokens.ts` — Framer Motion variants and transition configs.  
+`app/globals.css` — Tailwind v4 `@theme`, two-canvas colour system, keyframes.  
+Font: Plus Jakarta Sans via `next/font/google`, weights 400–800.
 
 ---
 
-## UI Component Status
+## TypeScript / Lint Status
 
-### Auth Components
-| Component | Complete | Notes |
+| Phase | `tsc --noEmit` | ESLint |
 |---|---|---|
-| `AuthLayout` (two-panel shell) | ✅ | `app/auth/layout.tsx` |
-| `BrandPanel` | ✅ | Navy left panel, logo, features, quote |
-| `GoogleButton` | ✅ | Inline SVG, loading spinner, Framer Motion |
-| `AuthDivider` | ✅ | "or" separator, reusable |
-| `LoginForm` | ✅ | Zod, react-hook-form, shake, credential error |
-| `SignupForm` | ✅ | Password strength, invite code expander, terms |
-| `PasswordStrength` | ✅ | 4-segment bar, animated, hint text |
-| `VerifyEmailPrompt` | ✅ | Resend cooldown timer, success banner, help box |
-| `RoleSelectForm` | ✅ | Animated radio cards, radio semantics, Framer Motion dot |
-| `ForgotPasswordForm` | ✅ | Form → inline success state transition |
-| `ResetPasswordForm` | ✅ | 3-state: no-token / form / success; PasswordStrength reused |
-| `RejectedScreen` | ✅ | Static Server Component, reasons list, mailto CTA |
-| `SuspendedScreen` | ✅ | Static Server Component, warning tone, mailto CTA |
-
-### UI Primitives
-| Component | Complete | Notes |
-|---|---|---|
-| `Button` | ✅ | variants: primary, secondary, ghost, outline, destructive, icon |
-| `Input` | ✅ | label, error, `useId`, aria |
-| `PasswordInput` | ✅ | Eye/EyeOff toggle |
-| `Checkbox` | ✅ | `ReactNode` label, Framer Motion check |
-| `Badge` | ✅ | — |
-| `Textarea` | ✅ | — |
-| `Select` | ✅ | — |
-| `Radio` | ✅ | — |
-| `Card` | ✅ | — |
-| `Avatar` | ✅ | — |
-| `Spinner` | ✅ | — |
-| `Skeleton` | ✅ | — |
-| `Toast` | ✅ | — |
-| `Drawer` | ✅ | — |
-| `Modal` | ✅ | — |
-| `Tabs` | ✅ | — |
-| `Tooltip` | ✅ | — |
-| `Divider` | ✅ | — |
-| `SearchInput` | ✅ | — |
-| `PageTransition` | ✅ | — |
-| `FileUpload` | ⬜ | Phase 5 (onboarding) |
-| `TagInput` | ⬜ | Phase 5 (onboarding) |
-| `AvatarUpload` | ⬜ | Phase 5 (onboarding) |
-| `Slider` | ⬜ | Phase 5 (onboarding) |
-| `Progress` | ⬜ | Phase 5 (onboarding) |
-
----
-
-## Known Issues
-
-| # | Severity | Issue | Status |
-|---|---|---|---|
-| 1 | Low | `lib/supabase.ts` and `lib/validations.ts` are empty stub files | Phase 2 |
-| 2 | Low | `app/dashboard/candidate\|employer\|admin/page.tsx` return `null` | Phase 4/6 |
+| 6.5 (current freeze) | ✅ 0 errors | ✅ 0 warnings |
+| 6 | ✅ 0 errors | ✅ 0 warnings |
+| 4 | ✅ 0 errors | ✅ 0 warnings |
+| 3 | ✅ 0 errors | ✅ 0 warnings |
+| 2 | ✅ 0 errors | ✅ 0 warnings |
+| 1 | ✅ 0 errors | ✅ 0 warnings |
 
 ---
 
@@ -291,95 +376,14 @@ middleware.ts           ⬜ not created (Phase 2)
 
 | Decision | Rationale |
 |---|---|
-| `data-color-scheme="light"` on auth form panel | Cascades CSS variable redefinitions — no component duplication needed |
-| Zod v4 uses `error:` not `errorMap:` | Breaking change from v3 |
-| `z.literal(true, { error: ... })` for terms checkbox | Zod v4 pattern for literal validation with custom message |
-| `max-w-110` not `max-w-[440px]` | Tailwind v4 canonical class (arbitrary value triggers lint warning) |
-| Inline SVG for Google/brand logos | `lucide-react` v1 has no brand icons |
-| `params` must be `await`ed in Next.js 16 | `params` / `searchParams` are now `Promise<{...}>` |
-| `PageProps<T>` requires route type argument in Next.js 16 | Used inline prop type `{ searchParams: Promise<Record<...>> }` instead |
-| Static screens (Rejected, Suspended) use `<a>` not `<Button>` | Server Components — no need for client-side Framer Motion on mailto links |
-| All hooks called before early returns in ResetPasswordForm | React Rules of Hooks — conditional hook calls are forbidden |
-| Google Sheets is transit layer, Supabase is source of truth | After sync, app never queries Sheets again for that data |
-| `is_discoverable` flag on `candidate_profiles` | Future swipe feature queries this; no schema change needed at Phase 6 |
-| `data_source` enum on `candidate_profiles` | Distinguishes Google Sheets synced rows from future native onboarding |
-
----
-
-## Design Token Reference
-
-### Brand Colours
-| Token | Value | Usage |
-|---|---|---|
-| `--color-navy` `#2B3875` | `bg-navy`, `text-navy` | Brand primary, auth panel, links, active states |
-| `--color-navy-deep` `#1e2850` | `bg-navy-deep` | Navy hover |
-| `--color-indigo` `#6B5FAE` | `text-indigo` | Secondary links, subtle CTAs |
-| `--color-cream` `#F9F0E3` | `bg-cream` | Warm surface, info boxes |
-| `--color-warm-white` `#FDFAF6` | `bg-warm-white` | Form panel background |
-| `--color-vellum` `#F0E8D8` | `bg-vellum` | Card hover |
-| `--color-flax` `#D8CFC0` | `border-flax` | Borders, dividers |
-| `--color-stone` `#8A8070` | `text-stone` | Muted text |
-| `--color-charcoal` `#2C2620` | `text-charcoal` | Primary dark body text |
-| `--color-brand-error` `#C43A3A` | — | Error states, rejected |
-| `--color-brand-success` `#2D8A5E` | — | Success states |
-| `--color-brand-warning` `#C47C1A` | — | Warning states, suspended |
-
----
-
-## Tech Stack
-
-| Layer | Library | Version |
-|---|---|---|
-| Framework | Next.js | 16.2.9 (App Router) |
-| UI | React | 19.2.4 |
-| Styling | Tailwind CSS | v4 |
-| Animation | Framer Motion | 12.x |
-| Forms | react-hook-form | 7.x |
-| Validation | Zod | 4.x |
-| Icons | lucide-react | 1.x (no brand icons — use inline SVG) |
-| Auth/DB | Supabase | 2.x (wired in Phase 2) |
-| Toasts | Sonner | 2.x |
-| Font | Plus Jakarta Sans | via `next/font/google` |
-
----
-
-## Documentation Suite
-
-All project docs live in `docs/`. Moved from project root. Update the relevant file **before** making any change it describes.
-
-| File | Status | Contents |
-|---|---|---|
-| `docs/DESIGN_SYSTEM.md` | ✅ Complete | Visual source of truth — colours, typography, spacing, all components |
-| `docs/DATABASE.md` | ✅ Complete | 14 tables, 5 enums, triggers, RLS policies, migration strategy |
-| `docs/AUTH_FLOW.md` | ✅ Complete | 8-state machine, route guards, middleware, session lifecycle, all flows |
-| `docs/API_REFERENCE.md` | ✅ Complete | All endpoints (Phases 2–6), request/response, error format |
-| `docs/PROJECT_STRUCTURE.md` | ✅ Complete | Every folder, architectural decisions, import conventions |
-| `docs/IMPLEMENTATION.md` | ✅ This file | Progress tracker |
-| `docs/CHANGELOG.md` | ✅ Complete | Version history, format guide |
-| `docs/DEPLOYMENT.md` | ✅ Complete | Vercel + Supabase setup, env vars, migration steps, post-deploy checklist |
-| `docs/SECURITY.md` | ✅ Complete | Threat model, RLS, secrets, injection prevention, CSRF, checklist |
-| `docs/TESTING.md` | ✅ Complete | Vitest + Playwright strategy, patterns, CI/CD |
-| `docs/FUTURE_ROADMAP.md` | ✅ Complete | Phases 5–6, post-launch features, deferred decisions |
-
----
-
-## Next Recommended Task
-
-**Begin Phase 2 — Supabase + Auth Machine** (requires explicit approval)
-
-Phase 2 scope:
-1. Create Supabase project, configure env vars (`.env.local`)
-2. `lib/supabase/client.ts` — browser Supabase client (singleton)
-3. `lib/supabase/server.ts` — cookie-based server client
-4. `lib/supabase/middleware.ts` — `updateSession()` helper
-5. `lib/supabase/types.ts` — generated DB types (`supabase gen types typescript`)
-6. Deploy database schema to Supabase (all tables, enums, RLS policies, triggers)
-7. `lib/auth/machine.ts` — `STATE_ROUTES` + `ALLOWED_TRANSITIONS` constants
-8. `lib/auth/router.ts` — `getCanonicalRoute(state, role)` helper
-9. `middleware.ts` — auth guard for `/dashboard/*` and `/onboarding/*`
-10. `app/api/auth/callback/route.ts` — exchange code for session, redirect by auth_state
-11. Replace all `TODO Phase 2` stubs in auth components with real Supabase calls
-12. `app/auth/confirm/page.tsx` — replace placeholder with real callback logic
-13. `lib/hooks/use-auth.ts` — client-side auth hook
-
-**Do NOT begin Phase 2 until explicitly approved.**
+| `proxy.ts` not `middleware.ts` | Next.js 16 breaking change — file must be `proxy.ts`, export must be `proxy` |
+| `params`/`searchParams` always awaited | Next.js 16 — these are `Promise<{...}>` |
+| `createSignedUrl()` not `getPublicUrl()` | Works regardless of bucket public/private setting |
+| `requireCandidate()` / `requireAdmin()` in API routes | Checks JWT + role + auth_state atomically |
+| Direct `createClient()` / `createServiceClient()` in server pages | Server pages don't use route-handler response shape |
+| No `updated_at` in `.upsert()` payloads | DB `update_updated_at` triggers handle this; setting it manually breaks Supabase TS overload resolution |
+| `useWatch({ control, name, defaultValue })` not `watch()` | Avoids `react-hooks/incompatible-library` ESLint error from React Compiler |
+| `defaultChecked` on `Checkbox` in `PreferencesForm` | Avoids internal-state/visual-sync mismatch |
+| `auth.admin.deleteUser()` for account deletion | Cascade FK deletes handle all child rows automatically |
+| Google Sheets via RS256 JWT | No `googleapis` package; lighter bundle, Vercel Edge compatible |
+| Supabase sole source of truth after sync | Never write back to Google Sheets |

@@ -2,10 +2,11 @@
 
 import Link            from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, User, Briefcase, Settings, LogOut, Zap } from 'lucide-react'
+import { LayoutDashboard, User, Briefcase, Settings, LogOut } from 'lucide-react'
 import { cn }          from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter }   from 'next/navigation'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const NAV_ITEMS = [
   { label: 'Home',      href: '/dashboard/candidate',           icon: LayoutDashboard, exact: true },
@@ -53,23 +54,18 @@ export function CandidateSidebar() {
           )
         })}
 
-        {/* Scout Mode — coming soon */}
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted/50 cursor-not-allowed select-none">
-          <Zap size={16} aria-hidden="true" />
-          Scout Mode
-          <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-            style={{ background: 'rgba(124,58,237,0.12)', color: '#A78BFA' }}>
-            Soon
-          </span>
-        </div>
       </nav>
 
-      {/* Sign out */}
-      <div className="p-3 border-t border-border">
+      {/* Theme + Sign out */}
+      <div className="p-3 border-t border-border space-y-0.5">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <ThemeToggle size={16} className="w-auto h-auto p-0 hover:bg-transparent" />
+          <span className="text-sm font-medium text-muted">Toggle theme</span>
+        </div>
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-white/5 transition-colors duration-150"
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-foreground/5 transition-colors duration-150"
         >
           <LogOut size={16} aria-hidden="true" />
           Sign out

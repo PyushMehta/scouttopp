@@ -2,7 +2,7 @@
 
 import { useState }      from 'react'
 import { useRouter }     from 'next/navigation'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, Copy, Check } from 'lucide-react'
 import { Button }        from '@/components/ui/button'
 
 interface CandidateActionsProps {
@@ -10,14 +10,22 @@ interface CandidateActionsProps {
   status:    string
 }
 
+interface ApproveResult {
+  success:    boolean
+  data?:      { actionLink?: string | null; inviteSent?: boolean }
+  error?:     { message: string }
+}
+
 export function CandidateActions({ stagingId, status }: CandidateActionsProps) {
   const router = useRouter()
 
-  const [approving, setApproving] = useState(false)
-  const [rejecting, setRejecting] = useState(false)
+  const [approving, setApproving]   = useState(false)
+  const [rejecting, setRejecting]   = useState(false)
   const [showReject, setShowReject] = useState(false)
-  const [reason, setReason]       = useState('')
-  const [error, setError]         = useState<string | null>(null)
+  const [reason, setReason]         = useState('')
+  const [error, setError]           = useState<string | null>(null)
+  const [actionLink, setActionLink] = useState<string | null>(null)
+  const [copied, setCopied]         = useState(false)
 
   const isDone = status === 'promoted' || status === 'rejected'
 
@@ -26,15 +34,29 @@ export function CandidateActions({ stagingId, status }: CandidateActionsProps) {
     setError(null)
     try {
       const res  = await fetch(`/api/admin/candidates/${stagingId}/approve`, { method: 'POST' })
-      const json = await res.json() as { success: boolean; error?: { message: string } }
+      const json = await res.json() as ApproveResult
       if (!json.success) { setError(json.error?.message ?? 'Approve failed.'); return }
-      router.push('/dashboard/admin/candidates?status=promoted')
-      router.refresh()
+
+      if (json.data?.actionLink) {
+        // Existing user — show the magic link for the admin to share manually
+        setActionLink(json.data.actionLink)
+      } else {
+        // New user — invite email sent, go back to list
+        router.push('/dashboard/admin/candidates?status=promoted')
+        router.refresh()
+      }
     } catch {
       setError('Network error.')
     } finally {
       setApproving(false)
     }
+  }
+
+  const handleCopy = async () => {
+    if (!actionLink) return
+    await navigator.clipboard.writeText(actionLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   const handleReject = async () => {
@@ -56,6 +78,49 @@ export function CandidateActions({ stagingId, status }: CandidateActionsProps) {
       setRejecting(false)
       setShowReject(false)
     }
+  }
+
+  // Show magic link after approving an existing user
+  if (actionLink) {
+    return (
+      <div className="space-y-3">
+        <div
+          className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg border"
+          style={{ color: 'var(--color-success)', borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.08)' }}
+        >
+          <CheckCircle2 size={14} aria-hidden="true" />
+          Approved — share this login link with the candidate
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3 space-y-2">
+          <p className="text-xs text-muted">
+            This candidate already had an account. Email delivery is unreliable — send them this link directly:
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-xs text-foreground bg-card border border-border rounded-lg px-2 py-1.5 truncate">
+              {actionLink}
+            </code>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-white/5 transition-colors"
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+          <p className="text-xs text-muted">
+            Link is single-use and signs them in directly to their dashboard.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => { router.push('/dashboard/admin/candidates?status=promoted'); router.refresh() }}
+          className="text-xs text-muted hover:text-foreground transition-colors"
+        >
+          ← Back to candidates
+        </button>
+      </div>
+    )
   }
 
   if (isDone) {

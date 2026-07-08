@@ -1,4 +1,35 @@
 export const APP_NAME    = 'ScouttOpp'
+
+/**
+ * Preset creative roles. Stored as TEXT in candidate_roles.role_name.
+ * Candidates may also enter a custom role not in this list.
+ */
+export const PRESET_ROLES = [
+  'UI/UX Designer',
+  'Graphic Designer',
+  'Brand Designer',
+  'Motion Designer',
+  'Video Editor',
+  'Photographer',
+  'Illustrator',
+  'Copywriter',
+  'Social Media Designer',
+  'Frontend Developer',
+  'Product Designer',
+  'Animator',
+  '3D Artist',
+  'Creative Director',
+  'Marketing Designer',
+] as const
+
+export type PresetRole = typeof PRESET_ROLES[number]
+
+/**
+ * Minimum profile_completeness score (0–100) required for a candidate
+ * to appear in the employer discovery feed.
+ * Set to 0 during development. Raise to 60 before production launch.
+ */
+export const MIN_DISCOVERY_COMPLETENESS = 0
 export const APP_URL     = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 export const SUPPORT_EMAIL = 'support@scouttopp.com'
 

@@ -1,5 +1,4 @@
 import { createServiceClient } from '@/lib/supabase/server'
-import type { CandidateRoleEnum } from '@/lib/supabase/types'
 import type { MappedCandidate } from './sync-mapper'
 
 export class AdminError extends Error {
@@ -55,7 +54,7 @@ export async function approveCandidate(stagingId: string, adminUserId: string) {
       pronouns:         mapped.pronouns,
       bio:              mapped.bio,
       avatar_url:       mapped.avatar_url,
-      primary_role:     mapped.primary_role as CandidateRoleEnum | null,
+      primary_role:     mapped.primary_role,
       years_experience: mapped.years_experience,
       portfolio_url:    mapped.portfolio_url,
       linkedin_url:     mapped.linkedin_url,
@@ -84,14 +83,54 @@ export async function approveCandidate(stagingId: string, adminUserId: string) {
     .in('status', ['pending'])
     .filter('mapped_data->>email', 'eq', mapped.email)
 
-  // Send Supabase invite email
-  const { error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(mapped.email, {
-    data: { role: 'candidate', candidate_profile_id: profile.id },
-  })
+  // Check if this candidate already has a Supabase account (signed up via the new flow).
+  // inviteUserByEmail silently fails for existing users, so we handle both paths explicitly.
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('id, auth_state')
+    .eq('email', mapped.email)
+    .maybeSingle()
 
-  if (inviteErr) {
-    // Invite failure is non-fatal — profile already created, admin can re-invite later
-    console.error('[admin.service] inviteUserByEmail failed:', inviteErr.message)
+  let inviteSent  = false
+  let actionLink: string | null = null
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+  if (existingProfile) {
+    // Existing account — link profile and approve directly
+    await supabase
+      .from('candidate_profiles')
+      .update({ user_id: existingProfile.id })
+      .eq('id', profile.id)
+
+    await supabase
+      .from('profiles')
+      .update({ auth_state: 'APPROVED' })
+      .eq('id', existingProfile.id)
+
+    // Generate a magic link the admin can share with the candidate
+    const { data: linkData, error: magicErr } = await supabase.auth.admin.generateLink({
+      type:    'magiclink',
+      email:   mapped.email,
+      options: { redirectTo: `${appUrl}/dashboard/candidate` },
+    })
+
+    if (magicErr) {
+      console.error('[admin.service] generateLink failed:', magicErr.message)
+    } else {
+      actionLink = linkData.properties?.action_link ?? null
+      inviteSent = true
+    }
+  } else {
+    // No existing account — send the usual invite email
+    const { error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(mapped.email, {
+      data: { role: 'candidate', candidate_profile_id: profile.id },
+    })
+
+    if (inviteErr) {
+      console.error('[admin.service] inviteUserByEmail failed:', inviteErr.message)
+    } else {
+      inviteSent    = true
+    }
   }
 
   return {
@@ -99,7 +138,8 @@ export async function approveCandidate(stagingId: string, adminUserId: string) {
     authState:          'APPROVED' as const,
     isDiscoverable:     true,
     approvedAt:         now,
-    inviteSent:         !inviteErr,
+    inviteSent,
+    actionLink,
   }
 }
 

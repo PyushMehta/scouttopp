@@ -6,6 +6,7 @@ import { LayoutDashboard, User, Briefcase, Settings, LogOut } from 'lucide-react
 import { cn }          from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter }   from 'next/navigation'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const NAV_ITEMS = [
   { label: 'Home',      href: '/dashboard/candidate',           icon: LayoutDashboard, exact: true },
@@ -44,11 +45,12 @@ export function CandidateTopBar() {
             </Link>
           )
         })}
+        <ThemeToggle />
         <button
           type="button"
           onClick={handleSignOut}
           aria-label="Sign out"
-          className="flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors"
+          className="flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-foreground hover:bg-foreground/5 transition-colors"
         >
           <LogOut size={16} aria-hidden="true" />
         </button>

@@ -19,12 +19,18 @@
    - [candidate_specialties](#36-candidate_specialties)
    - [candidate_portfolio_items](#37-candidate_portfolio_items)
    - [candidate_preferences](#38-candidate_preferences)
-   - [employer_profiles](#39-employer_profiles)
-   - [employer_hiring_profiles](#310-employer_hiring_profiles)
-   - [employer_showcase_items](#311-employer_showcase_items)
-   - [employer_preferences](#312-employer_preferences)
-   - [swipe_actions](#313-swipe_actions)
-   - [matches](#314-matches)
+   - [candidate_roles](#39-candidate_roles) ← Phase 6.5
+   - [candidate_portfolio_links](#310-candidate_portfolio_links) ← Phase 6.5
+   - [employer_profiles](#311-employer_profiles)
+   - [employer_hiring_profiles](#312-employer_hiring_profiles)
+   - [employer_showcase_items](#313-employer_showcase_items)
+   - [employer_preferences](#314-employer_preferences)
+   - [employer_saved_candidates](#315-employer_saved_candidates) ← Phase 6
+   - [employer_passed_candidates](#316-employer_passed_candidates) ← Phase 6, extended Phase 6.5
+   - [candidate_views](#317-candidate_views) ← Phase 6
+   - [candidate_notes](#318-candidate_notes) ← Phase 6
+   - [swipe_actions](#319-swipe_actions)
+   - [matches](#320-matches)
 4. [Relationships & ERD](#4-relationships--erd)
 5. [Triggers](#5-triggers)
 6. [Row-Level Security Policies](#6-row-level-security-policies)
@@ -127,11 +133,14 @@ CREATE TYPE data_source_enum AS ENUM (
 
 ```sql
 CREATE TYPE swipe_action_enum AS ENUM (
-  'like',
+  'like',       -- legacy; kept for DB compatibility
   'pass',
-  'super_like'
+  'super_like',
+  'scout'       -- added Phase 6.5; use this in new code
 );
 ```
+
+> **Branding rule:** Use `'scout'` (not `'like'`) in all new application code. `'like'` remains in the enum for backwards compatibility with any existing rows.
 
 ### `match_status_enum`
 
@@ -288,7 +297,7 @@ CREATE TABLE candidate_profiles (
   avatar_url           TEXT,
 
   -- Professional
-  primary_role         candidate_role_enum,
+  primary_role         TEXT,              -- free-text; denormalised display cache; migrated from candidate_role_enum in Phase 6.5
   years_experience     INT,
   portfolio_url        TEXT,
   linkedin_url         TEXT,
@@ -296,10 +305,11 @@ CREATE TABLE candidate_profiles (
   website_url          TEXT,
   resume_url           TEXT,
 
-  -- Discovery (Swipe feature)
+  -- Discovery
   is_discoverable      BOOLEAN NOT NULL DEFAULT false,
   discovery_paused     BOOLEAN NOT NULL DEFAULT false,
-  discovery_score      FLOAT,           -- computed ranking signal (future)
+  discovery_score      FLOAT,                          -- weighted ranking signal; architect for AI replacement
+  profile_completeness SMALLINT NOT NULL DEFAULT 0,   -- 0–100; computed by lib/candidate-completeness.ts; Phase 6.5
 
   -- Admin
   approved_by          UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -314,9 +324,11 @@ CREATE TABLE candidate_profiles (
 );
 ```
 
-**Key design decision:** `user_id` is nullable for synced candidates who don't yet have a Supabase Auth account. When a synced candidate later signs up, their `profiles.id` (= `auth.users.id`) is linked here. This enables a seamless transition from "sync-only" to "fully registered user" without data migration.
-
-`is_discoverable` is set to `true` by the admin approval action. Candidates can pause discovery via `discovery_paused`. The swipe query combines both: `is_discoverable = true AND discovery_paused = false`.
+**Key design decisions:**
+- `user_id` is nullable for synced candidates who don't yet have a Supabase Auth account. When a synced candidate later signs up, their `profiles.id` (= `auth.users.id`) is linked here.
+- `primary_role` is a denormalised TEXT cache for display performance (avoids a JOIN on every feed row). The source of truth for filtering is `candidate_roles` (Phase 6.5).
+- `profile_completeness` (0–100) is recomputed by `lib/candidate-completeness.ts` whenever the candidate updates their profile. The discovery feed filters on this column when `MIN_DISCOVERY_COMPLETENESS > 0`.
+- `is_discoverable` is set to `true` by admin approval. Candidates can pause discovery via `discovery_paused`. Feed query: `is_discoverable = true AND discovery_paused = false`.
 
 ---
 
@@ -381,7 +393,64 @@ CREATE TABLE candidate_preferences (
 
 ---
 
-### 3.9 `employer_profiles`
+### 3.9 `candidate_roles`
+
+Relational multi-role table. A candidate can have many roles; at most one is flagged `is_primary`. Added in Phase 6.5.
+
+```sql
+CREATE TABLE IF NOT EXISTS candidate_roles (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  role_name    TEXT NOT NULL,
+  is_primary   BOOLEAN NOT NULL DEFAULT false,
+  sort_order   INT NOT NULL DEFAULT 0,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- At most one primary role per candidate
+CREATE UNIQUE INDEX IF NOT EXISTS idx_candidate_roles_primary
+  ON candidate_roles (candidate_id) WHERE is_primary = true;
+
+-- No duplicate role names per candidate (case-insensitive)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_candidate_roles_unique
+  ON candidate_roles (candidate_id, lower(role_name));
+```
+
+| Column | Type | Notes |
+|---|---|---|
+| `role_name` | TEXT | Free-text role label. Use `PRESET_ROLES` in application layer; custom roles allowed. |
+| `is_primary` | BOOLEAN | Enforced at most one per candidate via partial UNIQUE index. |
+| `sort_order` | INT | Display order of secondary roles. |
+
+---
+
+### 3.10 `candidate_portfolio_links`
+
+External portfolio link URLs separate from uploaded media items (`candidate_portfolio_items`). Added in Phase 6.5.
+
+```sql
+CREATE TABLE IF NOT EXISTS candidate_portfolio_links (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  candidate_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  platform     TEXT NOT NULL CHECK (platform IN (
+    'behance','dribbble','website','instagram','youtube','vimeo','github','pdf','other'
+  )),
+  url          TEXT NOT NULL,
+  label        TEXT,
+  sort_order   INT NOT NULL DEFAULT 0,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+| Column | Type | Notes |
+|---|---|---|
+| `platform` | TEXT | One of the nine allowed values. Multiple links per platform permitted. |
+| `url` | TEXT | Full URL. Application validates `https://` prefix. |
+| `label` | TEXT | Optional display label (e.g. "Branding Project 2025"). |
+
+---
+
+### 3.11 `employer_profiles`
 
 ```sql
 CREATE TABLE employer_profiles (
@@ -402,7 +471,7 @@ CREATE TABLE employer_profiles (
 
 ---
 
-### 3.10 `employer_hiring_profiles`
+### 3.12 `employer_hiring_profiles`
 
 ```sql
 CREATE TABLE employer_hiring_profiles (
@@ -423,7 +492,7 @@ CREATE TABLE employer_hiring_profiles (
 
 ---
 
-### 3.11 `employer_showcase_items`
+### 3.13 `employer_showcase_items`
 
 Company culture content shown to candidates during the (future) match flow.
 
@@ -441,7 +510,7 @@ CREATE TABLE employer_showcase_items (
 
 ---
 
-### 3.12 `employer_preferences`
+### 3.14 `employer_preferences`
 
 ```sql
 CREATE TABLE employer_preferences (
@@ -456,9 +525,94 @@ CREATE TABLE employer_preferences (
 
 ---
 
-### 3.13 `swipe_actions`
+### 3.15 `employer_saved_candidates`
 
-Records every swipe decision an employer makes on a candidate card. **Defined now, empty until Phase 6.**
+Employer bookmarks a candidate. Added in Phase 6.
+
+```sql
+CREATE TABLE employer_saved_candidates (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employer_id  UUID NOT NULL REFERENCES employer_profiles(id) ON DELETE CASCADE,
+  candidate_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  UNIQUE (employer_id, candidate_id)
+);
+```
+
+---
+
+### 3.16 `employer_passed_candidates`
+
+Employer passes on a candidate. Added in Phase 6; extended with pass type and re-eligibility columns in Phase 6.5.
+
+```sql
+CREATE TABLE employer_passed_candidates (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employer_id           UUID NOT NULL REFERENCES employer_profiles(id) ON DELETE CASCADE,
+  candidate_id          UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  pass_type             TEXT NOT NULL DEFAULT 'temporary'
+                          CHECK (pass_type IN ('temporary', 'forever')),
+  expires_at            TIMESTAMPTZ,    -- null for forever passes; now() + 30 days for temporary
+  candidate_updated_at  TIMESTAMPTZ,   -- snapshot of candidate_profiles.updated_at at pass time
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  UNIQUE (employer_id, candidate_id)
+);
+```
+
+| Column | Type | Notes |
+|---|---|---|
+| `pass_type` | TEXT | `'temporary'`: re-eligible after 30 days or profile update. `'forever'`: permanently hidden. |
+| `expires_at` | TIMESTAMPTZ | Only relevant for `'temporary'` passes. Null means the pass never automatically expires (forever). |
+| `candidate_updated_at` | TIMESTAMPTZ | Snapshot taken at pass time. If `candidate_profiles.updated_at > this`, the candidate is re-eligible even within the 30-day window. |
+
+**Pass exclusion logic in discovery feed:**
+1. `pass_type = 'forever'` → always excluded
+2. `pass_type = 'temporary'` and `expires_at > now()` and `candidate.updated_at ≤ candidate_updated_at` → excluded
+3. Otherwise (30 days elapsed OR candidate updated) → re-enters feed
+
+---
+
+### 3.17 `candidate_views`
+
+Records each time an employer opens a full candidate profile. No unique constraint — tracks every view separately. Added in Phase 6.
+
+```sql
+CREATE TABLE candidate_views (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employer_id  UUID NOT NULL REFERENCES employer_profiles(id) ON DELETE CASCADE,
+  candidate_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+Insert is fire-and-forget (non-blocking in API route — errors silently logged).
+
+---
+
+### 3.18 `candidate_notes`
+
+Private employer note per candidate. `UNIQUE(employer_id, candidate_id)` — upserted on write. Added in Phase 6.
+
+```sql
+CREATE TABLE candidate_notes (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  employer_id  UUID NOT NULL REFERENCES employer_profiles(id) ON DELETE CASCADE,
+  candidate_id UUID NOT NULL REFERENCES candidate_profiles(id) ON DELETE CASCADE,
+  note         TEXT NOT NULL DEFAULT '',
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  UNIQUE (employer_id, candidate_id)
+);
+```
+
+---
+
+### 3.19 `swipe_actions`
+
+Records every swipe decision an employer makes on a candidate card. **Defined now, empty until Phase 8 (Scout Mode).**
 
 ```sql
 CREATE TABLE swipe_actions (
@@ -474,9 +628,9 @@ CREATE TABLE swipe_actions (
 
 ---
 
-### 3.14 `matches`
+### 3.20 `matches`
 
-Created when an employer `like`s or `super_like`s a discoverable candidate. **Defined now, empty until Phase 6.**
+Created when an employer scouts or super-scouts a discoverable candidate. **Defined now, empty until Phase 8 (Scout Mode).**
 
 ```sql
 CREATE TABLE matches (
@@ -506,7 +660,13 @@ auth.users (Supabase managed)
     │                   │
     │                   ├─── candidate_specialties (1:many, cascade)
     │                   ├─── candidate_portfolio_items (1:many, cascade)
+    │                   ├─── candidate_portfolio_links (1:many, cascade) ← Phase 6.5
+    │                   ├─── candidate_roles (1:many, cascade) ← Phase 6.5
     │                   ├─── candidate_preferences (1:1, cascade)
+    │                   ├─── candidate_views (1:many as target, cascade) ← Phase 6
+    │                   ├─── candidate_notes (1:many as target, cascade) ← Phase 6
+    │                   ├─── employer_saved_candidates (1:many as target, cascade) ← Phase 6
+    │                   ├─── employer_passed_candidates (1:many as target, cascade) ← Phase 6
     │                   └─── swipe_actions (1:many as target, cascade)
     │                               │
     │                               └─── matches
@@ -516,6 +676,10 @@ auth.users (Supabase managed)
                 ├─── employer_hiring_profiles (1:1, cascade)
                 ├─── employer_showcase_items (1:many, cascade)
                 ├─── employer_preferences (1:1, cascade)
+                ├─── employer_saved_candidates (1:many as actor, cascade) ← Phase 6
+                ├─── employer_passed_candidates (1:many as actor, cascade) ← Phase 6
+                ├─── candidate_views (1:many as actor, cascade) ← Phase 6
+                ├─── candidate_notes (1:many as actor, cascade) ← Phase 6
                 └─── swipe_actions (1:many as actor, cascade)
                             │
                             └─── matches
@@ -529,8 +693,8 @@ sync_runs (standalone audit table)
 | Parent deleted | Child behaviour |
 |---|---|
 | `auth.users` | `profiles` deleted (cascade) → all nested profile data deleted |
-| `candidate_profiles` | specialties, portfolio, preferences, swipe targets all deleted |
-| `employer_profiles` | hiring profile, showcase, preferences, swipe actions all deleted |
+| `candidate_profiles` | specialties, portfolio items, portfolio links, roles, preferences, views, notes, saved/passed records, swipe targets all deleted |
+| `employer_profiles` | hiring profile, showcase, preferences, saved/passed records, views, notes, swipe actions all deleted |
 | `sync_runs` | `candidate_sync_staging` rows remain (no FK cascade — audit trail preserved) |
 
 ---
@@ -792,23 +956,54 @@ CREATE POLICY "parties read own matches"
 CREATE INDEX idx_profiles_auth_state ON profiles (auth_state);
 CREATE INDEX idx_profiles_role       ON profiles (role);
 
--- candidate_profiles — swipe discovery query
+-- candidate_profiles — discovery feed ordering and filtering
 CREATE INDEX idx_candidate_discoverable
   ON candidate_profiles (is_discoverable, discovery_paused)
   WHERE is_discoverable = true AND discovery_paused = false;
 
-CREATE INDEX idx_candidate_user_id   ON candidate_profiles (user_id);
-CREATE INDEX idx_candidate_role      ON candidate_profiles (primary_role);
+CREATE INDEX idx_candidate_user_id           ON candidate_profiles (user_id);
+CREATE INDEX idx_candidate_role              ON candidate_profiles (primary_role);
+CREATE INDEX idx_candidate_discovery_order   ON candidate_profiles (discovery_score DESC NULLS LAST, created_at DESC, id ASC)
+  WHERE is_discoverable = true AND discovery_paused = false;
+CREATE INDEX idx_candidate_location_country  ON candidate_profiles (location_country);
+CREATE INDEX idx_candidate_experience        ON candidate_profiles (years_experience);
+CREATE INDEX idx_candidate_completeness      ON candidate_profiles (profile_completeness);   -- Phase 6.5
+
+-- candidate_roles (Phase 6.5) — role filter
+CREATE INDEX idx_candidate_roles_candidate   ON candidate_roles (candidate_id);
+CREATE INDEX idx_candidate_roles_role_name   ON candidate_roles (role_name);
+-- Partial UNIQUE indexes declared with table DDL (see 3.9 candidate_roles)
+
+-- candidate_portfolio_links (Phase 6.5)
+CREATE INDEX idx_portfolio_links_candidate   ON candidate_portfolio_links (candidate_id);
 
 -- candidate_sync_staging — admin review queue
 CREATE INDEX idx_staging_status      ON candidate_sync_staging (status);
 CREATE INDEX idx_staging_sync_run    ON candidate_sync_staging (sync_run_id);
 
--- swipe_actions — deduplication check
+-- candidate_specialties — skills filter
+CREATE INDEX idx_specialties_name    ON candidate_specialties (name);
+CREATE INDEX idx_specialties_cand    ON candidate_specialties (candidate_id);
+
+-- candidate_preferences — work type / rate / availability filter
+CREATE INDEX idx_prefs_candidate     ON candidate_preferences (candidate_id);
+
+-- Phase 6 discovery tables
+CREATE INDEX idx_saved_employer      ON employer_saved_candidates (employer_id);
+CREATE INDEX idx_saved_candidate     ON employer_saved_candidates (candidate_id);
+CREATE INDEX idx_passed_employer     ON employer_passed_candidates (employer_id);
+CREATE INDEX idx_passed_candidate    ON employer_passed_candidates (candidate_id);
+CREATE INDEX idx_passed_expires      ON employer_passed_candidates (expires_at)
+  WHERE pass_type = 'temporary';
+CREATE INDEX idx_views_employer      ON candidate_views (employer_id);
+CREATE INDEX idx_views_candidate     ON candidate_views (candidate_id);
+CREATE INDEX idx_notes_employer_cand ON candidate_notes (employer_id, candidate_id);
+
+-- swipe_actions — deduplication check (Phase 8)
 CREATE INDEX idx_swipe_employer      ON swipe_actions (employer_id);
 CREATE INDEX idx_swipe_candidate     ON swipe_actions (candidate_id);
 
--- matches — dashboard query
+-- matches — dashboard query (Phase 8)
 CREATE INDEX idx_matches_employer    ON matches (employer_id, status);
 CREATE INDEX idx_matches_candidate   ON matches (candidate_id, status);
 ```
@@ -828,11 +1023,16 @@ Example: `20260630120000_initial_schema.sql`
 
 ### Migration Phases
 
-| Migration | Content |
-|---|---|
-| `*_initial_schema.sql` | All enums, all tables, all triggers, all indexes |
-| `*_rls_policies.sql` | All RLS policies (separate for readability) |
-| `*_seed_admin.sql` | Admin invite code, initial admin account setup |
+| Migration file | Phase | Content |
+|---|---|---|
+| `20260630000000_initial_schema.sql` | 2 | All enums, all tables, all triggers, all indexes |
+| `20260630000001_rls_policies.sql` | 2 | All RLS policies (separate for readability) |
+| `20260630000002_seed_admin.sql` | 2 | Admin invite code, initial admin account setup |
+| `20260630000003_employer_profile_fields.sql` | 5 | `linkedin_url`, `founded_year` on `employer_profiles` |
+| `20260701000001_phase6_discovery.sql` | 6 | `employer_saved_candidates`, `employer_passed_candidates`, `candidate_views`, `candidate_notes` + 13 indexes |
+| `20260701000002_phase6_5_arch.sql` | 6.5 | `candidate_roles`, `candidate_portfolio_links`; `primary_role TEXT`; `profile_completeness`; `employer_passed_candidates` pass columns; `swipe_action_enum` + `'scout'` |
+
+> **Note:** `ALTER TYPE ... ADD VALUE` cannot run inside a transaction in PostgreSQL. Migration `20260701000002` runs this statement outside any transaction block — use `supabase db push` or run the SQL directly in Supabase SQL Editor.
 
 ### Adding Columns
 

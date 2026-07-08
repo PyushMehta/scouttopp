@@ -1,13 +1,13 @@
-import { createClient }       from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/server'
-import { redirect }            from 'next/navigation'
-import { ProfileForm }         from '@/components/dashboard/candidate/profile-form'
-import { ROUTES }              from '@/constants'
+import { createClient }        from '@/lib/supabase/server'
+import { createServiceClient }  from '@/lib/supabase/server'
+import { redirect }             from 'next/navigation'
+import { ProfileForm }          from '@/components/dashboard/candidate/profile-form'
+import { RolesEditor }          from '@/components/dashboard/candidate/roles-editor'
+import { ROUTES }               from '@/constants'
 
 export const metadata = { title: 'Edit Profile | ScouttOpp' }
 
 export default async function ProfilePage() {
-  // Auth check — same pattern as the dashboard home page
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(ROUTES.auth.login)
@@ -25,7 +25,7 @@ export default async function ProfilePage() {
     redirect(ROUTES.auth.login)
   }
 
-  // Fetch the candidate profile
+  // Fetch candidate profile
   const { data: candidateProfile, error } = await service
     .from('candidate_profiles')
     .select('id, full_name, pronouns, bio, primary_role, years_experience, location_city, location_country, timezone, phone, portfolio_url, linkedin_url, instagram_url, website_url, resume_url, avatar_url')
@@ -33,6 +33,14 @@ export default async function ProfilePage() {
     .single()
 
   if (error || !candidateProfile) redirect(ROUTES.auth.login)
+
+  // Fetch existing roles (after we have the profile id)
+  const { data: candidateRoles } = await service
+    .from('candidate_roles')
+    .select('id, role_name, is_primary, sort_order')
+    .eq('candidate_id', candidateProfile.id)
+    .order('sort_order')
+    .order('created_at')
 
   return (
     <div className="px-6 lg:px-8 py-6 lg:py-8 max-w-2xl">
@@ -42,7 +50,11 @@ export default async function ProfilePage() {
           Changes are saved to your profile immediately — employers won't see drafts.
         </p>
       </div>
-      <ProfileForm profile={candidateProfile} />
+
+      <div className="space-y-5">
+        <ProfileForm profile={candidateProfile} />
+        <RolesEditor initialRoles={candidateRoles ?? []} />
+      </div>
     </div>
   )
 }

@@ -2,7 +2,7 @@ import Link                    from 'next/link'
 import { createClient }        from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { redirect }            from 'next/navigation'
-import { CheckCircle2, AlertCircle, User, Briefcase, Link2, MapPin, Zap, ChevronRight, Eye } from 'lucide-react'
+import { CheckCircle2, AlertCircle, User, Briefcase, Link2, MapPin, Star, ChevronRight, Eye } from 'lucide-react'
 import { Badge }               from '@/components/ui/badge'
 import { Avatar }              from '@/components/ui/avatar'
 import { ROUTES }              from '@/constants'
@@ -63,7 +63,7 @@ export default async function CandidateDashboardPage() {
         <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
           Welcome back{profile.full_name ? `, ${profile.full_name.split(' ')[0]}` : ''}
         </h1>
-        <p className="mt-1 text-sm text-muted">Here's what's happening with your profile.</p>
+        <p className="mt-1 text-sm text-muted">Here&apos;s what&apos;s happening with your profile.</p>
       </div>
 
       {/* Status + Avatar card */}
@@ -79,7 +79,7 @@ export default async function CandidateDashboardPage() {
             <Badge variant="success" size="sm" dot>Approved</Badge>
             {profile.is_discoverable && (
               <span className="inline-flex items-center gap-1 text-xs text-muted">
-                <Eye size={12} aria-hidden="true" /> Visible to employers
+                <Eye size={12} aria-hidden="true" /> Profile active
               </span>
             )}
           </div>
@@ -122,7 +122,7 @@ export default async function CandidateDashboardPage() {
         {pct === 100 ? (
           <div className="flex items-center gap-2 text-sm text-success">
             <CheckCircle2 size={15} aria-hidden="true" />
-            Your profile is complete — employers can see all your details.
+            Your profile is complete — you&apos;re ready to be discovered.
           </div>
         ) : (
           <div className="space-y-2">
@@ -183,25 +183,26 @@ export default async function CandidateDashboardPage() {
         </Link>
       </div>
 
-      {/* Scout Mode coming soon */}
+      {/* Founding Creative beta card */}
       <div className="rounded-2xl border px-6 py-5"
         style={{ borderColor: 'rgba(124,58,237,0.2)', background: 'rgba(124,58,237,0.03)' }}>
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
             style={{ background: 'rgba(124,58,237,0.12)' }}>
-            <Zap size={18} style={{ color: '#A78BFA' }} strokeWidth={1.5} aria-hidden="true" />
+            <Star size={18} style={{ color: '#A78BFA' }} strokeWidth={1.5} aria-hidden="true" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold text-foreground">Scout Mode</h3>
+              <h3 className="text-sm font-semibold text-foreground">Founding Creative</h3>
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
                 style={{ background: 'rgba(124,58,237,0.15)', color: '#A78BFA' }}>
-                Coming Soon
+                Beta
               </span>
             </div>
             <p className="text-xs text-muted leading-relaxed">
-              Employers will discover and match with you through Scout Mode — a curated swipe experience for creative talent.
-              Keep your profile complete to be first in the queue.
+              You&apos;re one of the first creatives on ScouttOpp. A complete profile means
+              you&apos;ll be first in line when employer matching launches.
+              Your feedback shapes what this platform becomes.
             </p>
           </div>
         </div>

@@ -2,15 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
-import type { CandidateRoleEnum, Database } from '@/lib/supabase/types'
+import type { Database } from '@/lib/supabase/types'
 
 type CandidateProfileUpdate = Database['public']['Tables']['candidate_profiles']['Update']
-
-const CANDIDATE_ROLES: CandidateRoleEnum[] = [
-  'motion_designer', 'graphic_designer', 'ux_designer', 'brand_designer',
-  'illustrator', 'photographer', 'videographer', 'creative_director',
-  'art_director', 'copywriter', 'social_media', 'other',
-]
 
 const urlOrEmpty = z.string().refine(v => v === '' || /^https?:\/\/.+/.test(v), 'Must be a valid URL').optional()
 
@@ -18,7 +12,7 @@ const patchSchema = z.object({
   full_name:        z.string().min(1).max(100).optional(),
   pronouns:         z.string().max(50).optional(),
   bio:              z.string().max(600).optional(),
-  primary_role:     z.enum(CANDIDATE_ROLES as [CandidateRoleEnum, ...CandidateRoleEnum[]]).nullable().optional(),
+  primary_role:     z.string().max(100).nullable().optional(),
   years_experience: z.number().int().min(0).max(50).nullable().optional(),
   location_city:    z.string().max(100).optional(),
   location_country: z.string().max(100).optional(),

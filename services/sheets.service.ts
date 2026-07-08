@@ -59,6 +59,29 @@ export interface SheetRow {
   rawData:  Record<string, string>
 }
 
+/**
+ * Returns true if the given email appears in any row of the sheet.
+ * Used by the pending page to detect whether a candidate has submitted
+ * the Google Form before an admin has run the sync.
+ * Silently returns false on any Sheets API error.
+ */
+export async function checkEmailInSheet(email: string): Promise<boolean> {
+  try {
+    const rows = await fetchSheetRows()
+    const target = email.toLowerCase()
+    for (const row of rows) {
+      for (const [header, value] of Object.entries(row.rawData)) {
+        if (header.toLowerCase().includes('email') && value.trim().toLowerCase() === target) {
+          return true
+        }
+      }
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 export async function fetchSheetRows(): Promise<SheetRow[]> {
   const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID
   const range         = process.env.GOOGLE_SHEETS_RANGE ?? 'Sheet1'

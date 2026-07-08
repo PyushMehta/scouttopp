@@ -1,4 +1,3 @@
-import type { CandidateRoleEnum } from '@/lib/supabase/types'
 import type { SheetRow } from './sheets.service'
 
 export interface MappedCandidate {
@@ -11,7 +10,7 @@ export interface MappedCandidate {
   pronouns:         string | null
   bio:              string | null
   avatar_url:       string | null
-  primary_role:     CandidateRoleEnum | null
+  primary_role:     string | null
   years_experience: number | null
   portfolio_url:    string | null
   linkedin_url:     string | null
@@ -41,7 +40,7 @@ const FIELD_PATTERNS: Array<{ key: keyof MappedCandidate; patterns: string[] }> 
   { key: 'resume_url',       patterns: ['resume', 'cv link', 'cv url'] },
 ]
 
-const ROLE_MAP: Record<string, CandidateRoleEnum> = {
+const ROLE_MAP: Record<string, string> = {
   'motion designer':    'motion_designer',
   'motion design':      'motion_designer',
   'graphic designer':   'graphic_designer',
@@ -76,7 +75,7 @@ function findColumnValue(rawData: Record<string, string>, patterns: string[]): s
   return null
 }
 
-function mapRole(raw: string | null): CandidateRoleEnum | null {
+function mapRole(raw: string | null): string | null {
   if (!raw) return null
   const normalized = raw.toLowerCase().trim()
   for (const [pattern, role] of Object.entries(ROLE_MAP)) {

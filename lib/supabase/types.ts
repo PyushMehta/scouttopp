@@ -28,7 +28,7 @@ export type CandidateRoleEnum =
   | 'other'
 
 export type DataSourceEnum = 'google_sheets_sync' | 'native_onboarding'
-export type SwipeActionEnum = 'like' | 'pass' | 'super_like'
+export type SwipeActionEnum = 'like' | 'pass' | 'super_like' | 'scout'
 export type MatchStatusEnum = 'pending' | 'active' | 'closed'
 export type UserRole = 'candidate' | 'employer' | 'admin'
 
@@ -183,7 +183,7 @@ export type Database = {
           pronouns: string | null
           bio: string | null
           avatar_url: string | null
-          primary_role: CandidateRoleEnum | null
+          primary_role: string | null
           years_experience: number | null
           portfolio_url: string | null
           linkedin_url: string | null
@@ -193,6 +193,7 @@ export type Database = {
           is_discoverable: boolean
           discovery_paused: boolean
           discovery_score: number | null
+          profile_completeness: number
           approved_by: string | null
           approved_at: string | null
           rejected_by: string | null
@@ -214,7 +215,7 @@ export type Database = {
           pronouns?: string | null
           bio?: string | null
           avatar_url?: string | null
-          primary_role?: CandidateRoleEnum | null
+          primary_role?: string | null
           years_experience?: number | null
           portfolio_url?: string | null
           linkedin_url?: string | null
@@ -224,6 +225,7 @@ export type Database = {
           is_discoverable?: boolean
           discovery_paused?: boolean
           discovery_score?: number | null
+          profile_completeness?: number
           approved_by?: string | null
           approved_at?: string | null
           rejected_by?: string | null
@@ -241,7 +243,7 @@ export type Database = {
           pronouns?: string | null
           bio?: string | null
           avatar_url?: string | null
-          primary_role?: CandidateRoleEnum | null
+          primary_role?: string | null
           years_experience?: number | null
           portfolio_url?: string | null
           linkedin_url?: string | null
@@ -251,12 +253,64 @@ export type Database = {
           is_discoverable?: boolean
           discovery_paused?: boolean
           discovery_score?: number | null
+          profile_completeness?: number
           approved_by?: string | null
           approved_at?: string | null
           rejected_by?: string | null
           rejected_at?: string | null
           rejection_reason?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      candidate_roles: {
+        Row: {
+          id:           string
+          candidate_id: string
+          role_name:    string
+          is_primary:   boolean
+          sort_order:   number
+          created_at:   string
+        }
+        Insert: {
+          id?:          string
+          candidate_id: string
+          role_name:    string
+          is_primary?:  boolean
+          sort_order?:  number
+          created_at?:  string
+        }
+        Update: {
+          role_name?:  string
+          is_primary?: boolean
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      candidate_portfolio_links: {
+        Row: {
+          id:           string
+          candidate_id: string
+          platform:     'behance' | 'dribbble' | 'website' | 'instagram' | 'youtube' | 'vimeo' | 'github' | 'pdf' | 'other'
+          url:          string
+          label:        string | null
+          sort_order:   number
+          created_at:   string
+        }
+        Insert: {
+          id?:          string
+          candidate_id: string
+          platform:     'behance' | 'dribbble' | 'website' | 'instagram' | 'youtube' | 'vimeo' | 'github' | 'pdf' | 'other'
+          url:          string
+          label?:       string | null
+          sort_order?:  number
+          created_at?:  string
+        }
+        Update: {
+          platform?:   'behance' | 'dribbble' | 'website' | 'instagram' | 'youtube' | 'vimeo' | 'github' | 'pdf' | 'other'
+          url?:        string
+          label?:      string | null
+          sort_order?: number
         }
         Relationships: []
       }
@@ -367,10 +421,12 @@ export type Database = {
           company_size: '1-10' | '11-50' | '51-200' | '201-500' | '500+' | null
           industry: string | null
           company_url: string | null
+          linkedin_url: string | null
           logo_url: string | null
           bio: string | null
           location_city: string | null
           location_country: string | null
+          founded_year: number | null
           created_at: string
           updated_at: string
         }
@@ -381,20 +437,24 @@ export type Database = {
           company_size?: '1-10' | '11-50' | '51-200' | '201-500' | '500+' | null
           industry?: string | null
           company_url?: string | null
+          linkedin_url?: string | null
           logo_url?: string | null
           bio?: string | null
           location_city?: string | null
           location_country?: string | null
+          founded_year?: number | null
         }
         Update: {
           company_name?: string
           company_size?: '1-10' | '11-50' | '51-200' | '201-500' | '500+' | null
           industry?: string | null
           company_url?: string | null
+          linkedin_url?: string | null
           logo_url?: string | null
           bio?: string | null
           location_city?: string | null
           location_country?: string | null
+          founded_year?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -483,6 +543,91 @@ export type Database = {
         Update: {
           notify_new_match?: boolean
           notify_email?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employer_saved_candidates: {
+        Row: {
+          id:           string
+          employer_id:  string
+          candidate_id: string
+          saved_at:     string
+        }
+        Insert: {
+          id?:          string
+          employer_id:  string
+          candidate_id: string
+          saved_at?:    string
+        }
+        Update: {
+          saved_at?: string
+        }
+        Relationships: []
+      }
+      employer_passed_candidates: {
+        Row: {
+          id:                    string
+          employer_id:           string
+          candidate_id:          string
+          passed_at:             string
+          pass_type:             'temporary' | 'forever'
+          expires_at:            string | null
+          candidate_updated_at:  string | null
+        }
+        Insert: {
+          id?:                   string
+          employer_id:           string
+          candidate_id:          string
+          passed_at?:            string
+          pass_type?:            'temporary' | 'forever'
+          expires_at?:           string | null
+          candidate_updated_at?: string | null
+        }
+        Update: {
+          pass_type?:            'temporary' | 'forever'
+          expires_at?:           string | null
+          candidate_updated_at?: string | null
+        }
+        Relationships: []
+      }
+      candidate_views: {
+        Row: {
+          id:           string
+          employer_id:  string
+          candidate_id: string
+          viewed_at:    string
+        }
+        Insert: {
+          id?:          string
+          employer_id:  string
+          candidate_id: string
+          viewed_at?:   string
+        }
+        Update: {
+          viewed_at?: string
+        }
+        Relationships: []
+      }
+      candidate_notes: {
+        Row: {
+          id:           string
+          employer_id:  string
+          candidate_id: string
+          note:         string
+          created_at:   string
+          updated_at:   string
+        }
+        Insert: {
+          id?:          string
+          employer_id:  string
+          candidate_id: string
+          note?:        string
+          created_at?:  string
+          updated_at?:  string
+        }
+        Update: {
+          note?:      string
           updated_at?: string
         }
         Relationships: []

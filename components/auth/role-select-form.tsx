@@ -7,6 +7,8 @@ import { Sparkles, Building2, AlertCircle, type LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+const EMPLOYER_ENABLED = process.env.NEXT_PUBLIC_EMPLOYER_ENABLED === 'true'
+
 type Role = 'candidate' | 'employer'
 
 interface RoleOption {
@@ -17,7 +19,7 @@ interface RoleOption {
   badge:       string
 }
 
-const ROLES: RoleOption[] = [
+const ALL_ROLES: RoleOption[] = [
   {
     id:          'candidate',
     Icon:        Sparkles,
@@ -33,6 +35,8 @@ const ROLES: RoleOption[] = [
     badge:       'Studio / Agency',
   },
 ]
+
+const ROLES = EMPLOYER_ENABLED ? ALL_ROLES : ALL_ROLES.filter(r => r.id !== 'employer')
 
 export function RoleSelectForm() {
   const router   = useRouter()

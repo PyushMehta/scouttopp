@@ -62,14 +62,39 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-/* ─── Light theme override ───────────────────────────────────────────────
-   Applied to any element with data-color-scheme="light".
-   All child components that reference CSS vars pick up these values
-   automatically — no component changes required.
-──────────────────────────────────────────────────────────────────────────── */
-[data-color-scheme="light"] {
-  --color-background:    #FDFAF6;
-  --color-surface:       #F9F0E3;
+/* ─── Global light theme — OS preference ─────────────────────────────────── */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-background:    #FDF4E6;
+    --color-surface:       #F2EAE0;
+    --color-card:          #FFFFFF;
+
+    --color-primary:       #2B3875;
+    --color-primary-hover: #1e2850;
+    --color-secondary:     #6B5FAE;
+
+    --color-foreground: #2C2620;
+    --color-muted:      #8A8070;
+    --color-border:     #D8CFC0;
+    --color-input:      #FFFFFF;
+
+    --color-destructive: #C43A3A;
+    --color-success:     #2D8A5E;
+    --color-warning:     #C47C1A;
+    --color-info:        #3B82F6;
+
+    --shadow-sm:  0 1px 3px 0 rgb(43 56 117 / 0.08);
+    --shadow-md:  0 4px 12px -2px rgb(43 56 117 / 0.10);
+    --shadow-lg:  0 8px 24px -4px rgb(43 56 117 / 0.12);
+    --shadow-xl:  0 12px 32px -6px rgb(43 56 117 / 0.14);
+    --shadow-glow: 0 0 24px rgb(43 56 117 / 0.2);
+  }
+}
+
+/* ─── Global light theme — explicit user preference ──────────────────────── */
+:root[data-theme="light"] {
+  --color-background:    #FDF4E6;
+  --color-surface:       #F2EAE0;
   --color-card:          #FFFFFF;
 
   --color-primary:       #2B3875;
@@ -86,7 +111,61 @@
   --color-warning:     #C47C1A;
   --color-info:        #3B82F6;
 
-  /* Light shadows */
+  --shadow-sm:  0 1px 3px 0 rgb(43 56 117 / 0.08);
+  --shadow-md:  0 4px 12px -2px rgb(43 56 117 / 0.10);
+  --shadow-lg:  0 8px 24px -4px rgb(43 56 117 / 0.12);
+  --shadow-xl:  0 12px 32px -6px rgb(43 56 117 / 0.14);
+  --shadow-glow: 0 0 24px rgb(43 56 117 / 0.2);
+}
+
+/* ─── Global dark theme — explicit user preference ───────────────────────── */
+/* Restores @theme defaults when user has forced dark over a light OS. */
+:root[data-theme="dark"] {
+  --color-background: #0A0A0A;
+  --color-surface:    #111111;
+  --color-card:       #181818;
+
+  --color-primary:       #7C3AED;
+  --color-primary-hover: #6D28D9;
+  --color-secondary:     #A78BFA;
+
+  --color-foreground: #FFFFFF;
+  --color-muted:      #9CA3AF;
+  --color-border:     #262626;
+  --color-input:      #1A1A1A;
+
+  --color-destructive: #EF4444;
+  --color-success:     #10B981;
+  --color-warning:     #F59E0B;
+  --color-info:        #3B82F6;
+
+  --shadow-sm:   0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md:   0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg:   0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl:   0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-glow: 0 0 24px rgb(124 58 237 / 0.35);
+}
+
+/* ─── Section-level light override (marketing page alternating sections) ─── */
+[data-color-scheme="light"] {
+  --color-background:    #FDFAF6;
+  --color-surface:       #F2EAE0;
+  --color-card:          #FFFFFF;
+
+  --color-primary:       #2B3875;
+  --color-primary-hover: #1e2850;
+  --color-secondary:     #6B5FAE;
+
+  --color-foreground: #2C2620;
+  --color-muted:      #8A8070;
+  --color-border:     #D8CFC0;
+  --color-input:      #FFFFFF;
+
+  --color-destructive: #C43A3A;
+  --color-success:     #2D8A5E;
+  --color-warning:     #C47C1A;
+  --color-info:        #3B82F6;
+
   --shadow-sm: 0 1px 3px 0 rgb(43 56 117 / 0.08);
   --shadow-md: 0 4px 12px -2px rgb(43 56 117 / 0.10);
   --shadow-lg: 0 8px 24px -4px rgb(43 56 117 / 0.12);

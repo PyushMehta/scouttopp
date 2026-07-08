@@ -1,8 +1,7 @@
 # ScouttOpp — Deployment Guide
-### Production Deployment on Vercel + Supabase v1.0
+### Production Deployment on Vercel + Supabase
 
-> **Status:** Not yet deployed. Follow this guide for first deployment after Phase 2.  
-> Keep this document updated as infrastructure evolves.
+> **Status:** Candidate Beta — v0.7.0. Employer features are disabled in production (`NEXT_PUBLIC_EMPLOYER_ENABLED` defaults to `false`). All public CTAs target creative professionals. Follow this guide for production deployment.
 
 ---
 
@@ -10,273 +9,247 @@
 
 1. [Prerequisites](#1-prerequisites)
 2. [Supabase Setup](#2-supabase-setup)
-3. [Environment Variables](#3-environment-variables)
-4. [Database Migrations](#4-database-migrations)
-5. [Vercel Deployment](#5-vercel-deployment)
+3. [Google Cloud Setup](#3-google-cloud-setup)
+4. [Vercel Deployment](#4-vercel-deployment)
+5. [Environment Variables Reference](#5-environment-variables-reference)
 6. [Post-Deployment Checklist](#6-post-deployment-checklist)
-7. [Preview Deployments](#7-preview-deployments)
+7. [Database Migrations](#7-database-migrations)
 8. [Rollback Procedure](#8-rollback-procedure)
-9. [Monitoring](#9-monitoring)
 
 ---
 
 ## 1. Prerequisites
 
-- Supabase account and project created
-- Vercel account with project created (or GitHub integration)
-- Custom domain configured in Vercel
+- [Supabase account](https://supabase.com) — Pro plan recommended for production (daily backups, connection pooler)
+- [Vercel account](https://vercel.com) — Hobby tier is sufficient for MVP
+- [Google Cloud project](https://console.cloud.google.com) with Google Sheets API enabled
 - Supabase CLI installed: `npm install -g supabase`
-- Node.js 20+ and npm installed locally
-- Access to the GitHub repository
+- GitHub repo connected to Vercel
 
 ---
 
 ## 2. Supabase Setup
 
-### Create a Supabase Project
+### Create Project
 
-1. Go to [supabase.com/dashboard](https://supabase.com/dashboard)
-2. Click **New Project**
-3. Set:
-   - **Name:** `scouttopp-prod`
-   - **Region:** Choose closest to your primary user base
-   - **Database password:** Generate a strong password, save in 1Password/team vault
-4. Wait for provisioning (~2 minutes)
+1. Create a new Supabase project
+2. Note your **Project URL** and **anon key** (Settings → API)
+3. Note your **Service Role key** (Settings → API → Secret keys) — treat as a password
 
-### Enable Auth Providers
+### Run Migrations
 
-Navigate to **Authentication → Providers**:
+```bash
+supabase login
+supabase link --project-ref <your-project-ref>
+supabase db push
+```
 
-**Email provider:**
-- Enable: ✅
-- Confirm email: ✅ (required — auth state machine depends on this)
-- Secure email change: ✅
-- Min password length: 8
+This runs both migrations in order:
+- `20260630000000_initial_schema.sql` — tables, enums, triggers, indexes
+- `20260630000001_rls_policies.sql` — RLS deny-by-default policies
 
-**Google provider (Phase 2):**
-- Enable: ✅
-- Client ID and Secret: from Google Cloud Console OAuth credentials
-- Callback URL (copy from Supabase dashboard): `https://<project-ref>.supabase.co/auth/v1/callback`
+### Configure Auth
 
-### Configure Email Templates
+In Supabase Dashboard → Authentication → URL Configuration:
 
-In **Authentication → Email Templates**, customise:
-- **Confirm signup:** Update subject and body to match ScouttOpp brand
-- **Reset password:** Update subject, body, and redirect URL to `https://scouttopp.com/auth/reset-password`
-- **Magic link:** Update if used
+| Setting | Value |
+|---|---|
+| Site URL | `https://your-domain.com` |
+| Redirect URLs | `https://your-domain.com/api/auth/callback` |
 
-**Important:** Set Site URL in **Authentication → URL Configuration**:
-- Site URL: `https://scouttopp.com`
-- Redirect URLs (whitelist): `https://scouttopp.com/auth/confirm`, `https://scouttopp.com/auth/reset-password`
+In Authentication → Providers:
+- **Email:** Enabled (with "Confirm email" on)
+- **Google:** Add OAuth credentials (Client ID + Secret from Google Cloud Console)
+
+### Storage Buckets
+
+Create two buckets in Storage:
+
+| Bucket | Access | Purpose |
+|---|---|---|
+| `avatars` | Private (signed URLs only) | Candidate avatar images |
+| `portfolio` | Private (signed URLs only) | Portfolio media files |
+
+Set bucket policies to match `docs/SECURITY.md` — do NOT make buckets public.
 
 ---
 
-## 3. Environment Variables
+## 3. Google Cloud Setup
 
-### Required Variables
+### Enable Google Sheets API
 
-Create `.env.local` for local development. **Never commit this file.**
+1. Go to Google Cloud Console → APIs & Services → Library
+2. Search "Google Sheets API" → Enable
+
+### Create Service Account
+
+1. APIs & Services → Credentials → Create Credentials → Service account
+2. Name: `sheets-sync`
+3. No roles needed on project level
+4. Download JSON key file
+
+### Share Spreadsheet
+
+Share your Google Sheets spreadsheet with the service account email:  
+`sheets-sync@<your-project>.iam.gserviceaccount.com`  
+Role: **Viewer** (read-only)
+
+### Extract Key Values
+
+From the downloaded JSON:
+
+```json
+{
+  "client_email": "sheets-sync@<project>.iam.gserviceaccount.com",
+  "private_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
+}
+```
+
+These become `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`.
+
+> **Note:** The implementation uses RS256 JWT directly (no `googleapis` package). The private key must be the full PEM string including headers and `\n` characters.
+
+---
+
+## 4. Vercel Deployment
+
+### Connect Repository
+
+1. Vercel Dashboard → Add New → Project → Import from GitHub
+2. Select your `scouttopp` repo
+3. Framework: Next.js (auto-detected)
+4. Build command: `npm run build`
+5. Output directory: `.next`
+
+### Set Environment Variables
+
+In Vercel → Settings → Environment Variables, add each variable from Section 5 below.
+
+Set each to: **Production**, **Preview**, and **Development** environments (or production-only for secrets).
+
+### Deploy
 
 ```bash
-# Supabase
+git push origin main
+# Vercel auto-deploys on push to main
+```
+
+Or trigger manually in Vercel Dashboard → Deployments → Redeploy.
+
+---
+
+## 5. Environment Variables Reference
+
+```bash
+# ─── Supabase ───────────────────────────────────────
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<service-role-key>     # Server-only, never expose to client
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
-# Google Sheets Sync (Phase 3)
-GOOGLE_SHEETS_API_KEY=<api-key>
-GOOGLE_SHEETS_SPREADSHEET_ID=<sheet-id>
+# Server-only — NEVER prefix with NEXT_PUBLIC_
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
-# Application
-NEXT_PUBLIC_APP_URL=https://scouttopp.com        # Or http://localhost:3000 for dev
+# ─── App ────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+
+# ─── Feature flags ──────────────────────────────────
+# Candidate Beta: leave unset or set to "false".
+# Set to "true" to re-enable employer dashboard, discovery APIs, and employer sign-up.
+NEXT_PUBLIC_EMPLOYER_ENABLED=false
+
+# ─── Candidate onboarding form ──────────────────────
+NEXT_PUBLIC_CANDIDATE_FORM_URL=https://forms.google.com/...
+
+# ─── Google Sheets Sync (Phase 3+) ──────────────────
+GOOGLE_SERVICE_ACCOUNT_EMAIL=sheets-sync@<project>.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
+GOOGLE_SHEETS_SPREADSHEET_ID=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms
+GOOGLE_SHEETS_RANGE=Sheet1
 ```
 
 ### Variable Security Rules
 
-| Variable | Prefix | Where accessible |
+| Prefix | Exposed to browser | Use for |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | `NEXT_PUBLIC_` | Client + Server |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `NEXT_PUBLIC_` | Client + Server |
-| `SUPABASE_SERVICE_ROLE_KEY` | *(none)* | Server only (API routes, services) |
-| `GOOGLE_SHEETS_API_KEY` | *(none)* | Server only |
-| `GOOGLE_SHEETS_SPREADSHEET_ID` | *(none)* | Server only |
-| `NEXT_PUBLIC_APP_URL` | `NEXT_PUBLIC_` | Client + Server |
+| `NEXT_PUBLIC_` | Yes | Supabase URL + anon key (safe to expose) |
+| _(no prefix)_ | No | Service role key, Google credentials |
 
-**`SUPABASE_SERVICE_ROLE_KEY` bypasses RLS.** It must ONLY be used in server-side code (API route handlers, services). It must NEVER be referenced in any Client Component or passed to the browser.
-
-### Vercel Environment Variables
-
-Set all the above in Vercel: **Project → Settings → Environment Variables**.  
-Assign each to the correct environments (Production, Preview, Development).
-
----
-
-## 4. Database Migrations
-
-### Initial Setup
-
-```bash
-# Log in to Supabase CLI
-supabase login
-
-# Link local CLI to your Supabase project
-supabase link --project-ref <project-ref>
-
-# Run all pending migrations
-supabase db push
-```
-
-### Running Migrations
-
-Migrations live in `supabase/migrations/`. They are SQL files run in alphabetical (date) order.
-
-```bash
-# Create a new migration file
-supabase migration new <description>
-
-# Preview what would be applied
-supabase db diff
-
-# Apply to production
-supabase db push
-
-# Reset local dev DB to match production
-supabase db reset
-```
-
-### Generating TypeScript Types
-
-After any schema change, regenerate types:
-
-```bash
-supabase gen types typescript --project-id <project-ref> > lib/supabase/types.ts
-```
-
-Commit the updated `types.ts` with the migration. The CI/CD pipeline should fail if they're out of sync.
-
----
-
-## 5. Vercel Deployment
-
-### First Deployment
-
-1. Connect GitHub repository to Vercel project
-2. Framework preset: **Next.js** (auto-detected)
-3. Build command: `npm run build` (default)
-4. Output directory: `.next` (default)
-5. Install command: `npm install` (default)
-6. Node.js version: **20.x**
-7. Add all environment variables (see Section 3)
-8. Click **Deploy**
-
-### `next.config.ts` for Production
-
-Before deploying, add production configuration:
-
-```ts
-import type { NextConfig } from 'next'
-
-const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      // Supabase Storage (avatars, portfolio images)
-      { protocol: 'https', hostname: '*.supabase.co' },
-      // Google (OAuth avatars)
-      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
-    ],
-  },
-  // Strict mode helps catch issues early
-  reactStrictMode: true,
-}
-
-export default nextConfig
-```
-
-### Deployment Triggers
-
-| Event | Environment | Behaviour |
-|---|---|---|
-| Push to `main` | Production | Auto-deploy |
-| Push to any branch | Preview | Deploy to preview URL |
-| Pull request | Preview | Deploy to PR-specific URL |
+**`SUPABASE_SERVICE_ROLE_KEY` must never be in a `NEXT_PUBLIC_` variable.** It bypasses RLS and grants full database access.
 
 ---
 
 ## 6. Post-Deployment Checklist
 
-After first production deployment:
+### Functional Tests
 
-**Auth:**
-- [ ] Sign up with a new email — confirm email is received and verification works
-- [ ] Sign in with correct credentials — dashboard access works
-- [ ] Sign in with incorrect credentials — error state shows correctly
-- [ ] Forgot password flow — reset email arrives and link works
-- [ ] Google OAuth — redirects correctly and creates profile
+- [ ] Visit `https://your-domain.com` — redirects to `/auth/login`
+- [ ] Sign up with email — receive verification email
+- [ ] Click verify link — lands on `/auth/role-select`
+- [ ] Sign in with Google OAuth
+- [ ] Admin: log in to `/dashboard/admin`, trigger sync
+- [ ] Candidate: accept invite email, log into `/dashboard/candidate`
+- [ ] Avatar upload works (check for signed URL in response)
+- [ ] Portfolio upload works (image and PDF)
+- [ ] Account deletion removes all rows
 
-**Admin:**
-- [ ] Create an admin account (directly in Supabase Auth + set `profiles.role = 'admin'`)
-- [ ] Admin can log in and access `/dashboard/admin`
-- [ ] Sync can be triggered and completes
+### Configuration
 
-**Security:**
-- [ ] Service role key is NOT in `NEXT_PUBLIC_` vars
-- [ ] Supabase RLS is enabled on all tables
-- [ ] `/api/*` routes that require admin return 403 for non-admin users
-- [ ] `/dashboard/*` routes redirect unauthenticated users to `/auth/login`
-
-**Performance:**
-- [ ] Lighthouse score on auth pages: Accessibility ≥ 95
-- [ ] Core Web Vitals in green on Vercel
+- [ ] Supabase Redirect URL includes production domain
+- [ ] Storage buckets are private (not public)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` is not in any `NEXT_PUBLIC_` variable
+- [ ] Google Sheets API enabled in Google Cloud project
+- [ ] Service account has access to spreadsheet
 
 ---
 
-## 7. Preview Deployments
+## 7. Database Migrations
 
-Vercel creates a preview URL for every branch and PR. These share nothing with production by default.
+### Adding a New Migration
 
-**Preview environment variables:** Configure a separate Supabase project (`scouttopp-staging`) for preview environments. This prevents preview deployments from touching production data.
-
-Add preview-specific env vars in Vercel under **Environment Variables → Preview** environment:
+```bash
+supabase migration new <migration-name>
+# Edit supabase/migrations/<timestamp>_<migration-name>.sql
+supabase db push
 ```
-NEXT_PUBLIC_SUPABASE_URL      = https://<staging-project-ref>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY = <staging-anon-key>
-SUPABASE_SERVICE_ROLE_KEY     = <staging-service-role-key>
+
+### Reverting a Migration
+
+Supabase does not support automatic rollback. To revert:
+1. Write a new `_rollback.sql` migration that undoes the changes
+2. Push the rollback migration
+
+### Checking Migration Status
+
+```bash
+supabase db diff          # Show diff between local and remote
+supabase migration list   # List applied migrations
 ```
 
 ---
 
 ## 8. Rollback Procedure
 
-### Application Rollback
+### Code Rollback
 
-In Vercel dashboard: **Deployments** → select a previous deployment → **Promote to Production**.  
-This is instant (no rebuild) — CDN switches to previous build artifact.
+```bash
+# In Vercel Dashboard: Deployments → select previous → Promote to Production
+# OR
+git revert HEAD
+git push origin main
+```
 
 ### Database Rollback
 
-Migrations are not automatically reversible. For rollback:
-1. Write a compensating migration (undo the schema change)
-2. Test it in staging
-3. Apply via `supabase db push`
+For schema changes, write a compensation migration:
 
-For serious data loss issues: restore from Supabase automated backup (available in Supabase dashboard under **Database → Backups**). Supabase Pro plan includes daily backups; point-in-time recovery is available on higher plans.
+```sql
+-- supabase/migrations/<timestamp>_rollback_<name>.sql
+-- Example: re-add a dropped column
+ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS legacy_field text;
+```
 
----
+Push via `supabase db push`.
 
-## 9. Monitoring
+### Emergency: Restore from Backup
 
-### Vercel
-
-- **Analytics:** Enable Vercel Analytics for Web Vitals monitoring
-- **Logs:** Real-time function logs in Vercel dashboard → **Logs** tab
-- **Errors:** Consider adding Sentry (future): `npm install @sentry/nextjs`
-
-### Supabase
-
-- **Database:** Supabase dashboard → **Database → Reports** — query performance, slow queries
-- **Auth:** Supabase dashboard → **Authentication → Logs** — sign in/up events, errors
-- **API:** Supabase dashboard → **API → Logs** — REST/RPC call logs
-
-### Uptime
-
-Consider adding an uptime monitor (e.g., Better Uptime, UptimeRobot) to ping `https://scouttopp.com` and `https://scouttopp.com/api/health` (future health endpoint).
+Supabase Pro includes daily backups. Restore via:
+Supabase Dashboard → Settings → Backups → Select backup → Restore

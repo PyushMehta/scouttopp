@@ -1,32 +1,15 @@
 'use client'
 
-import { useForm }       from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useState }      from 'react'
 import { Save }          from 'lucide-react'
 import { Input }         from '@/components/ui/input'
 import { Textarea }      from '@/components/ui/textarea'
-import { Select }        from '@/components/ui/select'
 import { Button }        from '@/components/ui/button'
 import { toast }         from '@/components/ui/toast'
 import { AvatarUpload }  from './avatar-upload'
-import type { CandidateRoleEnum } from '@/lib/supabase/types'
 
 /* ─── Constants ─────────────────────────────────────────────────────────── */
-
-const ROLE_OPTIONS = [
-  { value: 'motion_designer',   label: 'Motion Designer' },
-  { value: 'graphic_designer',  label: 'Graphic Designer' },
-  { value: 'ux_designer',       label: 'UX Designer' },
-  { value: 'brand_designer',    label: 'Brand Designer' },
-  { value: 'illustrator',       label: 'Illustrator' },
-  { value: 'photographer',      label: 'Photographer' },
-  { value: 'videographer',      label: 'Videographer' },
-  { value: 'creative_director', label: 'Creative Director' },
-  { value: 'art_director',      label: 'Art Director' },
-  { value: 'copywriter',        label: 'Copywriter' },
-  { value: 'social_media',      label: 'Social Media' },
-  { value: 'other',             label: 'Other' },
-]
 
 const URL_PATTERN = /^https?:\/\/.+/
 
@@ -41,7 +24,7 @@ export interface ProfileData {
   full_name: string | null
   pronouns: string | null
   bio: string | null
-  primary_role: CandidateRoleEnum | null
+  primary_role: string | null
   years_experience: number | null
   location_city: string | null
   location_country: string | null
@@ -59,7 +42,6 @@ interface FormValues {
   full_name: string
   pronouns: string
   bio: string
-  primary_role: string
   years_experience: string
   location_city: string
   location_country: string
@@ -91,14 +73,13 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isDirty, isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
       full_name:        profile.full_name        ?? '',
       pronouns:         profile.pronouns         ?? '',
       bio:              profile.bio              ?? '',
-      primary_role:     profile.primary_role     ?? '',
       years_experience: profile.years_experience?.toString() ?? '',
       location_city:    profile.location_city    ?? '',
       location_country: profile.location_country ?? '',
@@ -112,14 +93,13 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
     },
   })
 
-  const bioValue = watch('bio')
+  const bioValue = useWatch({ control, name: 'bio', defaultValue: profile.bio ?? '' })
 
   const onSubmit = async (values: FormValues) => {
     const payload: Record<string, unknown> = {
       full_name:        values.full_name        || undefined,
       pronouns:         values.pronouns         || undefined,
       bio:              values.bio              || undefined,
-      primary_role:     values.primary_role     || null,
       years_experience: values.years_experience ? parseInt(values.years_experience, 10) : null,
       location_city:    values.location_city    || undefined,
       location_country: values.location_country || undefined,
@@ -196,25 +176,17 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
           value={bioValue}
           {...register('bio', { maxLength: { value: 600, message: 'Max 600 characters' } })}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select
-            label="Primary role"
-            placeholder="Select a role"
-            options={ROLE_OPTIONS}
-            {...register('primary_role')}
-          />
-          <Input
-            label="Years of experience"
-            type="number"
-            min={0}
-            max={50}
-            placeholder="3"
-            {...register('years_experience', {
-              min: { value: 0,  message: 'Min 0' },
-              max: { value: 50, message: 'Max 50' },
-            })}
-          />
-        </div>
+        <Input
+          label="Years of experience"
+          type="number"
+          min={0}
+          max={50}
+          placeholder="3"
+          {...register('years_experience', {
+            min: { value: 0,  message: 'Min 0' },
+            max: { value: 50, message: 'Max 50' },
+          })}
+        />
       </Section>
 
       {/* Location */}
