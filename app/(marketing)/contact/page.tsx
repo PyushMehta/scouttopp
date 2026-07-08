@@ -1,5 +1,6 @@
 import type { Metadata }    from 'next'
 import { Mail, Building2, User, MessageSquare, ArrowRight } from 'lucide-react'
+import { TrustedCompanies } from '@/components/marketing/trusted-companies'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -199,6 +200,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           </div>
 
         </div>
+        <TrustedCompanies />
       </div>
     </div>
   )

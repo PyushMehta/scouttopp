@@ -9,8 +9,8 @@ const comparisons = [
   { old: 'Keywords over talent', new: 'Skills and portfolio first' },
   { old: 'Open applications, anyone applies', new: 'Verified, curated candidates only' },
   { old: 'Resume-based matching', new: 'Work-based discovery' },
-  { old: 'Slow, multi-week hiring cycles', new: 'Direct connections from day one' },
-  { old: 'Middlemen and agency fees', new: 'No intermediaries, ever' },
+  { old: 'Slow, multi-week hiring cycles', new: 'Direct connections' },
+  
 ]
 
 export function SolutionSection() {
