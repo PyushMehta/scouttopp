@@ -115,7 +115,7 @@ export function HowItWorksSection() {
     <section
       id="how-it-works"
       className="py-32 lg:py-40"
-      style={{ background: 'var(--color-surface)' }}
+      style={{ background: 'var(--color-background)' }}
       aria-label="How it works"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
