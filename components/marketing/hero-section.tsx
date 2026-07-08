@@ -20,7 +20,7 @@ export function HeroSection() {
         playsInline
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        src="/videos/hero-bg.mp4"
+        src="https://awtotzyogpufqxuchrai.supabase.co/storage/v1/object/public/marketing/hero-bg.mp4"
       />
 
       {/* Dark overlay for readability */}
