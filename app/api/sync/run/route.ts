@@ -41,7 +41,7 @@ export async function POST() {
   try {
     const rows = await fetchSheetRows()
 
-    // Fetch existing emails already in staging or canonical to detect duplicates
+    // Fetch existing emails + phones from staging and canonical to detect duplicates
     const [{ data: existingStaging }, { data: existingCanonical }] = await Promise.all([
       supabase
         .from('candidate_sync_staging')
@@ -49,7 +49,7 @@ export async function POST() {
         .in('status', ['pending', 'promoted']),
       supabase
         .from('candidate_profiles')
-        .select('email'),
+        .select('email, phone'),
     ])
 
     const existingEmails = new Set([
@@ -61,6 +61,18 @@ export async function POST() {
         .map(c => c.email as string | undefined)
         .filter(Boolean)
         .map(e => e!.toLowerCase()),
+    ])
+
+    // Phone dedup: same phone = same person trying with a different email
+    const existingPhones = new Set([
+      ...(existingStaging ?? [])
+        .map(s => (s.mapped_data as Record<string, unknown> | null)?.phone as string | undefined)
+        .filter(Boolean)
+        .map(p => p!.replace(/\D/g, '')), // strip non-digits for loose matching
+      ...(existingCanonical ?? [])
+        .map(c => c.phone as string | undefined)
+        .filter(Boolean)
+        .map(p => p!.replace(/\D/g, '')),
     ])
 
     let rowsSkipped = 0
@@ -81,7 +93,11 @@ export async function POST() {
         }
       }
 
-      if (existingEmails.has(mapped.email.toLowerCase())) {
+      const phoneDigits = mapped.phone?.replace(/\D/g, '') ?? ''
+      const isEmailDup = existingEmails.has(mapped.email.toLowerCase())
+      const isPhoneDup = phoneDigits.length >= 7 && existingPhones.has(phoneDigits)
+
+      if (isEmailDup || isPhoneDup) {
         rowsSkipped++
         return {
           sync_run_id:       syncRun.id,
@@ -89,6 +105,9 @@ export async function POST() {
           raw_data:          row.rawData,
           mapped_data:       mapped as unknown as Record<string, unknown>,
           status:            'duplicate' as const,
+          error_message:     isPhoneDup && !isEmailDup
+            ? `Possible duplicate: phone number matches an existing candidate (different email: ${mapped.email})`
+            : undefined,
         }
       }
 
