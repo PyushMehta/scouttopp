@@ -18,10 +18,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: { default: 'ScouttOpp', template: '%s | ScouttOpp' },
-  description: 'The modern platform connecting top talent with the companies that matter.',
+  description: 'The invitation-only platform for creative professionals. Get discovered through your work — not just your resume.',
   icons: {
     icon: '/scoutt.png',
     apple: '/scoutt.png',
+  },
+  openGraph: {
+    title: "Talent this good doesn't come from a job board.",
+    description: 'The creative talent platform. Get discovered through your work — not just your resume.',
+    siteName: 'ScouttOpp',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Talent this good doesn't come from a job board.",
+    description: 'The creative talent platform. Get discovered through your work — not just your resume.',
   },
 }
 
