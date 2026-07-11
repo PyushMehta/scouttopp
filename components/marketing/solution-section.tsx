@@ -15,9 +15,9 @@ const comparisons = [
 
 export function SolutionSection() {
   return (
-    <section className="py-32 lg:py-40" aria-label="The solution">
+    <section className="py-16 lg:py-24" aria-label="The solution">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div className="text-center mb-8">
           <SectionHeader
             eyebrow="The solution"
             heading="We built something different."

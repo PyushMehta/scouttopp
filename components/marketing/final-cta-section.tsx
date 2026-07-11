@@ -8,7 +8,7 @@ import { fadeUpVariants, transitions } from '@/lib/tokens'
 export function FinalCtaSection() {
   return (
     <section
-      className="py-32 lg:py-40 relative overflow-hidden"
+      className="py-16 lg:py-24 relative overflow-hidden"
       aria-label="Call to action"
     >
       {/* Glow */}

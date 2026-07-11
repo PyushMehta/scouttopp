@@ -114,12 +114,12 @@ export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="py-32 lg:py-40"
+      className="py-16 lg:py-24"
       style={{ background: 'var(--color-background)' }}
       aria-label="How it works"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <SectionHeader
             eyebrow="How it works"
             heading="Simple on the surface. Deliberate underneath."
@@ -127,7 +127,7 @@ export function HowItWorksSection() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-8">
           <div
             className="relative flex rounded-full p-1 gap-1"
             style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.14)' }}

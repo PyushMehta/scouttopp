@@ -158,7 +158,7 @@ function EmployersContent() {
   return (
     <div>
       {/* Coming soon badge + description */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <motion.span
           variants={fadeUpVariants}
           initial="hidden"
@@ -250,12 +250,12 @@ export function ForYouSection() {
     <section
       data-color-scheme="light"
       id="for-you"
-      className="py-32 lg:py-40"
+      className="py-16 lg:py-24"
       aria-label="For candidates and employers"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <SectionHeader
             eyebrow="Built for both sides"
             heading="Your work speaks first."
@@ -264,7 +264,7 @@ export function ForYouSection() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-8">
           <div
             className="relative flex rounded-full p-1 gap-1"
             style={{ background: 'rgba(43,56,117,0.07)', border: '1px solid rgba(43,56,117,0.1)' }}

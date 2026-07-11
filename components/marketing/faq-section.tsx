@@ -109,11 +109,11 @@ export function FaqSection() {
     <section
       data-color-scheme="light"
       id="faq"
-      className="py-32 lg:py-40"
+      className="py-16 lg:py-24"
       aria-label="Frequently asked questions"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div className="text-center mb-8">
           <SectionHeader heading="FAQs" light />
         </div>
 

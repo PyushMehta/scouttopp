@@ -27,7 +27,7 @@ export function ProblemSection() {
   return (
     <section
       data-color-scheme="light"
-      className="py-32 lg:py-40"
+      className="py-16 lg:py-24"
       aria-label="The problem"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">

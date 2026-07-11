@@ -53,11 +53,11 @@ export function FeaturesSection() {
     <section
       data-color-scheme="light"
       id="features"
-      className="py-32 lg:py-40"
+      className="py-16 lg:py-24"
       aria-label="Platform features"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div className="text-center mb-8">
           <SectionHeader
             eyebrow="Features"
             heading="Everything you need to hire or get hired."
