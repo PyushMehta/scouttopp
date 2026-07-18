@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     <LegalPageShell
       title="Privacy Policy"
       date={DATE}
-      intro="This policy explains how ScouttOpp ("we", "us", "our") collects, uses, and protects your personal information when you use our platform."
+      intro='This policy explains how ScouttOpp ("we", "us", "our") collects, uses, and protects your personal information when you use our platform.'
     >
 
       <Section id="who-we-are" title="1. Who We Are">
