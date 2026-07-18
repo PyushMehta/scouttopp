@@ -94,9 +94,9 @@ export function LoginForm() {
         return
       }
 
-      // Middleware will redirect to canonical route based on auth_state.
-      // router.refresh() triggers the middleware to re-evaluate.
-      router.refresh()
+      // Hard navigation to login — middleware sees authenticated user and
+      // redirects to their canonical route (admin/candidate/employer dashboard).
+      window.location.href = '/auth/login'
     } catch {
       setCredentialError('Something went wrong. Please try again.')
       triggerShake()
