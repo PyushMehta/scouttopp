@@ -194,6 +194,6 @@ export async function POST() {
       .update({ status: 'failed', error_message: message, completed_at: new Date().toISOString() })
       .eq('id', syncRun.id)
 
-    return err('SYNC_FAILED', 'Sync failed. Check server logs for details.', 502)
+    return err('SYNC_FAILED', message, 502)
   }
 }
