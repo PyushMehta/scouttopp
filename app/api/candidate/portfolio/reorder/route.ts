@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
+import { serverError }                   from '@/lib/api-error'
 
 const schema = z.object({ orderedIds: z.array(z.string().uuid()).min(1) })
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const failed = results.find(r => r.error)
   if (failed?.error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: failed.error.message } }, { status: 500 })
+    return serverError('candidate/portfolio/reorder', failed.error)
   }
 
   return NextResponse.json({ success: true })

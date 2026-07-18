@@ -1,18 +1,29 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireEmployer }               from '@/lib/auth/require-employer'
 import { createServiceClient }           from '@/lib/supabase/server'
+import { z }                             from 'zod'
+
+const bodySchema = z.object({
+  candidate_id: z.string().uuid(),
+})
 
 export async function POST(req: NextRequest) {
   const auth = await requireEmployer()
   if (!auth.ok) return auth.response
 
   const { employerProfileId } = auth
-  const body = await req.json() as { candidate_id?: string }
-  const { candidate_id } = body
 
-  if (!candidate_id) {
-    return NextResponse.json({ success: false, error: { message: 'candidate_id is required.' } }, { status: 400 })
+  let raw: unknown
+  try { raw = await req.json() } catch {
+    return NextResponse.json({ success: false, error: { message: 'Invalid JSON.' } }, { status: 400 })
   }
+
+  const parsed = bodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return NextResponse.json({ success: false, error: { message: 'Invalid request.', details: parsed.error.flatten() } }, { status: 422 })
+  }
+
+  const { candidate_id } = parsed.data
 
   const service = createServiceClient()
 
@@ -51,12 +62,18 @@ export async function DELETE(req: NextRequest) {
   if (!auth.ok) return auth.response
 
   const { employerProfileId } = auth
-  const body = await req.json() as { candidate_id?: string }
-  const { candidate_id } = body
 
-  if (!candidate_id) {
-    return NextResponse.json({ success: false, error: { message: 'candidate_id is required.' } }, { status: 400 })
+  let raw: unknown
+  try { raw = await req.json() } catch {
+    return NextResponse.json({ success: false, error: { message: 'Invalid JSON.' } }, { status: 400 })
   }
+
+  const parsed = bodySchema.safeParse(raw)
+  if (!parsed.success) {
+    return NextResponse.json({ success: false, error: { message: 'Invalid request.', details: parsed.error.flatten() } }, { status: 422 })
+  }
+
+  const { candidate_id } = parsed.data
 
   const service = createServiceClient()
 

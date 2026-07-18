@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireEmployer } from '@/lib/auth/require-employer'
+import { requireEmployer }     from '@/lib/auth/require-employer'
 import { createServiceClient } from '@/lib/supabase/server'
+import { serverError }         from '@/lib/api-error'
 
 export async function DELETE() {
   const auth = await requireEmployer()
@@ -9,7 +10,7 @@ export async function DELETE() {
   const service = createServiceClient()
   const { error } = await service.auth.admin.deleteUser(auth.userId)
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'DELETE_ERROR', message: error.message } }, { status: 500 })
+    return serverError('employer/account DELETE', error)
   }
 
   return NextResponse.json({ success: true })

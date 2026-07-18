@@ -21,8 +21,9 @@ export async function POST(
         { status: e.status },
       )
     }
+    console.error('[admin/suspend] unexpected error:', e)
     return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Unexpected error.' } },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } },
       { status: 500 },
     )
   }

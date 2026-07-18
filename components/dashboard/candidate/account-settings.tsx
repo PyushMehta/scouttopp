@@ -26,7 +26,8 @@ const changePasswordSchema = z
 
 type Values = z.infer<typeof changePasswordSchema>
 
-export function AccountSettings({ email }: { email: string }) {
+export function AccountSettings({ email, provider = 'email' }: { email: string; provider?: string }) {
+  if (provider === 'google') return null
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {

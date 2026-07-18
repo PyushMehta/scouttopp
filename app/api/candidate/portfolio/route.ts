@@ -3,6 +3,7 @@ import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
 import { MAX_PORTFOLIO_ITEMS }           from '@/constants'
+import { serverError }                   from '@/lib/api-error'
 
 const MEDIA_TYPES = ['image', 'video', 'link', 'pdf'] as const
 
@@ -26,7 +27,7 @@ export async function GET() {
     .order('sort_order', { ascending: true })
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/portfolio GET', error)
   }
 
   return NextResponse.json({ success: true, data })
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/portfolio POST', error)
   }
 
   return NextResponse.json({ success: true, data })

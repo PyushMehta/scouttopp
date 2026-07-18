@@ -1,6 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession }    from '@/lib/supabase/middleware'
 import { getCanonicalRoute } from '@/lib/auth/machine'
+import {
+  checkAuthIP,
+  checkAuthed,
+  checkAdmin,
+  checkPublic,
+  getClientIP,
+  rateLimitResponse,
+} from '@/lib/rate-limit'
 
 // Employer features are disabled in the Candidate Beta release.
 // Set NEXT_PUBLIC_EMPLOYER_ENABLED=true to re-enable.
@@ -31,6 +39,7 @@ const UNAUTHED_PUBLIC = [
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const ip = getClientIP(request)
 
   // ── Employer feature gate ──────────────────────────────────────────────────
   // When EMPLOYER_ENABLED is false (Candidate Beta), block employer routes so
@@ -69,6 +78,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next({ request })
   }
 
+  // ── Auth-sensitive rate limit (per-IP, strict) ────────────────────────────
+  // Covers invite-code validation, OAuth callback, and auth state transitions.
+  // Backoff and per-code limits are applied inside each route handler.
+  const isAuthPath =
+    pathname.startsWith('/api/invite/') ||
+    pathname.startsWith('/api/auth/')
+  if (isAuthPath) {
+    const rl = await checkAuthIP(ip)
+    if (!rl.ok) return rateLimitResponse(rl.retryAfter)
+  }
+
   // Always pass through specific public paths
   if (ALWAYS_PUBLIC.some((p) => pathname.startsWith(p))) {
     const { supabaseResponse } = await updateSession(request)
@@ -77,6 +97,23 @@ export async function proxy(request: NextRequest) {
 
   // Refresh session tokens and get current user
   const { supabaseResponse, user, supabase } = await updateSession(request)
+
+  // ── API rate limits (post-session) ────────────────────────────────────────
+  if (pathname.startsWith('/api/')) {
+    if (user) {
+      // Authenticated: admin routes get the looser admin tier; everything else
+      // gets the authed tier. Auth-sensitive paths already checked above.
+      if (!isAuthPath) {
+        const isAdminPath = pathname.startsWith('/api/admin/') || pathname.startsWith('/api/sync/')
+        const rl = isAdminPath ? await checkAdmin(user.id) : await checkAuthed(user.id)
+        if (!rl.ok) return rateLimitResponse(rl.retryAfter)
+      }
+    } else if (!isAuthPath) {
+      // Unauthenticated public API call (not already covered by auth-path check)
+      const rl = await checkPublic(ip)
+      if (!rl.ok) return rateLimitResponse(rl.retryAfter)
+    }
+  }
 
   // ── No session ─────────────────────────────────────────────────────────────
   if (!user || !supabase) {

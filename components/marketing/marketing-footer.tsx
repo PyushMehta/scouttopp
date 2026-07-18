@@ -14,8 +14,16 @@ const companyLinks = [
 ]
 
 const legalLinks = [
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'Terms', href: '/terms' },
+  { label: 'Privacy Policy',             href: '/privacy' },
+  { label: 'Terms & Conditions',         href: '/terms' },
+  { label: 'Cookie Policy',              href: '/cookies' },
+  { label: 'Community Guidelines',       href: '/community-guidelines' },
+  { label: 'Copyright & IP',             href: '/copyright' },
+  { label: 'Disclaimer',                 href: '/disclaimer' },
+  { label: 'AI Usage Policy',            href: '/ai-policy' },
+  { label: 'Candidate Verification',     href: '/candidate-verification' },
+  { label: 'Employer Verification',      href: '/employer-verification' },
+  { label: 'Account Deletion',           href: '/account-deletion' },
 ]
 
 const socialLinks = [

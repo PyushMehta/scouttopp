@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
+import { serverError }                   from '@/lib/api-error'
 
 const patchSchema = z.object({
   discovery_paused: z.boolean(),
@@ -33,7 +34,7 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/visibility PATCH', error)
   }
 
   return NextResponse.json({ success: true, data })

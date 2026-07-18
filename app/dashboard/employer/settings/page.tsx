@@ -52,7 +52,7 @@ export default async function EmployerSettingsPage() {
       </div>
 
       <div className="space-y-5">
-        <AccountSettings email={user.email ?? ''} />
+        <AccountSettings email={user.email ?? ''} provider={user.app_metadata?.provider ?? 'email'} />
         <EmployerNotifications prefs={prefs} />
         <EmployerDangerZone />
       </div>

@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
+import { serverError }                   from '@/lib/api-error'
+import { mimeMatchesBuffer }             from '@/lib/file-magic'
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
 const ALLOWED_TYPES  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -32,6 +34,10 @@ export async function POST(req: NextRequest) {
   const path     = `${auth.candidateProfileId}/avatar.${ext}`
   const buffer   = Buffer.from(await file.arrayBuffer())
 
+  if (!mimeMatchesBuffer(file.type, buffer)) {
+    return NextResponse.json({ success: false, error: { code: 'INVALID_FILE_TYPE', message: 'File content does not match the declared type.' } }, { status: 422 })
+  }
+
   const service = createServiceClient()
 
   const { error: uploadErr } = await service.storage
@@ -39,7 +45,7 @@ export async function POST(req: NextRequest) {
     .upload(path, buffer, { contentType: file.type, upsert: true })
 
   if (uploadErr) {
-    return NextResponse.json({ success: false, error: { code: 'UPLOAD_FAILED', message: uploadErr.message } }, { status: 500 })
+    return serverError('candidate/avatar upload', uploadErr)
   }
 
   // Signed URL works whether the bucket is public or private — avoids
@@ -49,7 +55,7 @@ export async function POST(req: NextRequest) {
     .createSignedUrl(path, 60 * 60 * 24 * 365) // 1 year
 
   if (signedErr || !signedData) {
-    return NextResponse.json({ success: false, error: { code: 'URL_FAILED', message: signedErr?.message ?? 'Could not generate avatar URL.' } }, { status: 500 })
+    return serverError('candidate/avatar signed URL', signedErr ?? 'no signed data')
   }
 
   const avatarUrl = signedData.signedUrl
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (updateErr) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: updateErr.message } }, { status: 500 })
+    return serverError('candidate/avatar profile update', updateErr)
   }
 
   return NextResponse.json({ success: true, data: { avatarUrl: data.avatar_url } })

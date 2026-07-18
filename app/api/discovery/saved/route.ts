@@ -12,7 +12,12 @@ export async function GET(req: NextRequest) {
   const service = createServiceClient()
   const { searchParams } = new URL(req.url)
   const cursorParam = searchParams.get('cursor')
-  const q           = searchParams.get('q')?.trim()
+  const q           = searchParams.get('q')?.trim().slice(0, 200) || undefined
+
+  // Validate cursor is an ISO 8601 timestamp before sending to DB
+  if (cursorParam && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(cursorParam)) {
+    return NextResponse.json({ success: false, error: { message: 'Invalid cursor.' } }, { status: 400 })
+  }
 
   // Fetch saved candidate records with cursor pagination
   let savedQuery = service

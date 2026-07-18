@@ -36,10 +36,10 @@ function ProfileCardMockup() {
           className="w-16 h-16 rounded-full border-4 border-white -mt-8 mb-3 flex items-center justify-center font-bold text-white text-xl"
           style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%)' }}
         >
-          A
+          S
         </div>
-        <p className="font-bold text-lg" style={{ color: 'var(--color-charcoal)' }}>Aisha T.</p>
-        <p className="text-sm mb-4" style={{ color: 'var(--color-stone)' }}>Motion Designer · London</p>
+        <p className="font-bold text-lg" style={{ color: 'var(--color-charcoal)' }}>Soham P.</p>
+        <p className="text-sm mb-4" style={{ color: 'var(--color-stone)' }}>Founder · Mumbai</p>
         <div className="grid grid-cols-3 gap-1.5 rounded-xl overflow-hidden mb-4">
           {[
             'rgba(124,58,237,0.2)', 'rgba(107,95,174,0.25)', 'rgba(155,141,196,0.2)',

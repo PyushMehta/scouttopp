@@ -34,19 +34,25 @@ function ProfileField({ label, value }: { label: string; value: string | number 
 
 function LinkField({ label, url }: { label: string; url: string | null | undefined }) {
   if (!url) return null
+  const isAbsolute = /^https?:\/\//i.test(url)
+  const display = url.replace(/^https?:\/\//i, '').slice(0, 50) + (url.length > 53 ? '…' : '')
   return (
     <div>
       <dt className="text-xs font-medium text-muted mb-0.5">{label}</dt>
       <dd>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-sm text-secondary hover:underline underline-offset-2"
-        >
-          {url.replace(/^https?:\/\//, '').slice(0, 50)}{url.length > 53 ? '…' : ''}
-          <ExternalLink size={11} />
-        </a>
+        {isAbsolute ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-secondary hover:underline underline-offset-2"
+          >
+            {display}
+            <ExternalLink size={11} />
+          </a>
+        ) : (
+          <span className="text-sm text-foreground">{url}</span>
+        )}
       </dd>
     </div>
   )

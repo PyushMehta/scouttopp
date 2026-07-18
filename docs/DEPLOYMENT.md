@@ -38,15 +38,18 @@
 
 ### Run Migrations
 
-```bash
-supabase login
-supabase link --project-ref <your-project-ref>
-supabase db push
-```
+Run each file **in order** via **Supabase Dashboard → SQL Editor → New query**. Paste and run one at a time, clicking "Run and enable RLS" when prompted.
 
-This runs both migrations in order:
-- `20260630000000_initial_schema.sql` — tables, enums, triggers, indexes
-- `20260630000001_rls_policies.sql` — RLS deny-by-default policies
+| Order | File | What it does |
+|---|---|---|
+| 1 | `20260630000000_initial_schema.sql` | Tables, enums, triggers, indexes |
+| 2 | `20260630000001_rls_policies.sql` | RLS deny-by-default policies |
+| 3 | `20260630000002_employer_profile_fields.sql` | `linkedin_url`, `founded_year` on employer_profiles |
+| 4 | `20260701000000_phase6_schema.sql` | Discovery tables (saved, passed, views, notes) |
+| 5 | `20260701000001_phase6_rls.sql` | RLS policies for Phase 6 tables |
+| 6 | `20260701000002_phase6_5_arch.sql` | Multi-role, portfolio links, pass expiry, completeness score |
+
+> **Note:** Migration 6 contains `ALTER TYPE ADD VALUE` — if your runner wraps in a transaction, run it outside one.
 
 ### Configure Auth
 
@@ -55,22 +58,25 @@ In Supabase Dashboard → Authentication → URL Configuration:
 | Setting | Value |
 |---|---|
 | Site URL | `https://your-domain.com` |
-| Redirect URLs | `https://your-domain.com/api/auth/callback` |
+| Redirect URLs | `https://your-domain.com/**` |
 
 In Authentication → Providers:
 - **Email:** Enabled (with "Confirm email" on)
-- **Google:** Add OAuth credentials (Client ID + Secret from Google Cloud Console)
+- **Google:** Add OAuth credentials (Client ID + Secret from Google Cloud Console). The callback URL to register in Google Cloud is: `https://<project-ref>.supabase.co/auth/v1/callback`
+
+> **Note:** Google OAuth credentials are currently hosted in the personal Google Cloud project (`pyush063@gmail.com`). Migrate to the company Google Cloud org when Workspace admin access is available.
 
 ### Storage Buckets
 
-Create two buckets in Storage:
+Create three buckets in Storage:
 
-| Bucket | Access | Purpose |
-|---|---|---|
-| `avatars` | Private (signed URLs only) | Candidate avatar images |
-| `portfolio` | Private (signed URLs only) | Portfolio media files |
+| Bucket | Access | File size limit | MIME types | Purpose |
+|---|---|---|---|---|
+| `marketing` | **Public** | 200 MB | `video/mp4, image/jpeg, image/png` | Hero video and marketing assets |
+| `avatars` | Private (signed URLs only) | 5 MB | `image/jpeg, image/png, image/webp` | Candidate avatar images |
+| `portfolio` | Private (signed URLs only) | 50 MB | `image/jpeg, image/png, image/webp, video/mp4` | Portfolio media files |
 
-Set bucket policies to match `docs/SECURITY.md` — do NOT make buckets public.
+Always use `createSignedUrl()` for `avatars` and `portfolio` — never `getPublicUrl()`.
 
 ---
 
@@ -164,6 +170,32 @@ GOOGLE_SERVICE_ACCOUNT_EMAIL=sheets-sync@<project>.iam.gserviceaccount.com
 GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----\n"
 GOOGLE_SHEETS_SPREADSHEET_ID=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms
 GOOGLE_SHEETS_RANGE=Sheet1
+
+# ─── Rate limiting (Upstash Redis) ──────────────────
+# Required for production rate limiting. Without these, rate limiting is
+# disabled (a warning is logged). Get credentials at https://upstash.com
+# (free tier: 10,000 commands/day, no credit card required).
+UPSTASH_REDIS_REST_URL=https://<your-db>.upstash.io
+UPSTASH_REDIS_REST_TOKEN=AX...
+
+# All thresholds below are optional — shown values are production defaults.
+# Auth tier (invite/validate, /api/auth/*): per-IP sliding window
+RATE_LIMIT_AUTH_IP_REQUESTS=10       # max requests per window from one IP
+RATE_LIMIT_AUTH_WINDOW_SECONDS=900   # 15-minute window
+# Auth tier: per-code/account sliding window (inside route handler)
+RATE_LIMIT_AUTH_ACCOUNT_REQUESTS=5   # max tries per invite code per window
+# Exponential backoff on invalid invite codes
+RATE_LIMIT_AUTH_BACKOFF_BASE=2       # seconds before first retry after failure
+RATE_LIMIT_AUTH_BACKOFF_MAX=300      # maximum backoff cap (5 min)
+# Public API tier (unauthenticated callers)
+RATE_LIMIT_PUBLIC_REQUESTS=60        # requests per window
+RATE_LIMIT_PUBLIC_WINDOW_SECONDS=60  # 1-minute window
+# Authenticated user tier (candidate/employer/discovery routes)
+RATE_LIMIT_AUTHED_REQUESTS=300       # requests per window per user
+RATE_LIMIT_AUTHED_WINDOW_SECONDS=60  # 1-minute window
+# Admin tier (admin/* and sync/* routes)
+RATE_LIMIT_ADMIN_REQUESTS=600        # requests per window per admin user
+RATE_LIMIT_ADMIN_WINDOW_SECONDS=60   # 1-minute window
 ```
 
 ### Variable Security Rules

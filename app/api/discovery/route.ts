@@ -58,25 +58,45 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
 
   const cursorParam     = searchParams.get('cursor')
-  const q               = searchParams.get('q')?.trim()
+  const qRaw            = searchParams.get('q')?.trim()
   const roleParam       = searchParams.get('role')
   const skillsParam     = searchParams.get('skills')
-  const locationCountry = searchParams.get('location_country')?.trim()
-  const locationCity    = searchParams.get('location_city')?.trim()
+  const locationCountry = searchParams.get('location_country')?.trim().slice(0, 100) || undefined
+  const locationCity    = searchParams.get('location_city')?.trim().slice(0, 100) || undefined
   const filterRemote    = searchParams.get('remote')   === '1'
   const filterHybrid    = searchParams.get('hybrid')   === '1'
   const filterOnsite    = searchParams.get('onsite')   === '1'
   const filterContract  = searchParams.get('contract') === '1'
   const filterFulltime  = searchParams.get('fulltime') === '1'
-  const rateMax         = searchParams.get('rate_max')      ? Number(searchParams.get('rate_max'))      : null
-  const expMin          = searchParams.get('exp_min')       ? Number(searchParams.get('exp_min'))       : null
-  const expMax          = searchParams.get('exp_max')       ? Number(searchParams.get('exp_max'))       : null
   const availableNow    = searchParams.get('available_now') === '1'
   const hasPortfolio    = searchParams.get('has_portfolio') === '1'
   const isFirstPage     = !cursorParam
 
-  const roles  = roleParam   ? roleParam.split(',').filter(Boolean)   : []
-  const skills = skillsParam ? skillsParam.split(',').filter(Boolean) : []
+  // Reject q that contains PostgREST metacharacters (comma injects extra OR conditions)
+  if (qRaw && (qRaw.length > 100 || /[,()]/.test(qRaw))) {
+    return NextResponse.json({ success: false, error: { message: 'Invalid search query.' } }, { status: 422 })
+  }
+  const q = qRaw || undefined
+
+  // Parse numeric params — reject non-finite or out-of-range values
+  const parseNumeric = (key: string, min: number, max: number): number | null => {
+    const raw = searchParams.get(key)
+    if (!raw) return null
+    const n = Number(raw)
+    if (!Number.isFinite(n) || n < min || n > max || !Number.isInteger(n)) return null
+    return n
+  }
+  const rateMax = parseNumeric('rate_max', 0, 100000)
+  const expMin  = parseNumeric('exp_min',  0, 100)
+  const expMax  = parseNumeric('exp_max',  0, 100)
+
+  // roles/skills: split on comma, enforce item count and per-item length
+  const roles  = roleParam
+    ? roleParam.split(',').filter(Boolean).slice(0, 20).map(r => r.trim().slice(0, 100))
+    : []
+  const skills = skillsParam
+    ? skillsParam.split(',').filter(Boolean).slice(0, 30).map(s => s.trim().slice(0, 100))
+    : []
 
   // ── 1. Build exclusion list ────────────────────────────────────────────────
   const [{ data: saved }, { data: passed }] = await Promise.all([
@@ -227,6 +247,7 @@ export async function GET(req: NextRequest) {
   if (hasPortfolio)    query = query.not('portfolio_url', 'is', null)
 
   if (q) {
+    // q is already validated: max 100 chars, no commas or parens
     const escaped = q.replace(/'/g, "''")
     query = query.or(`full_name.ilike.%${escaped}%,bio.ilike.%${escaped}%`)
   }

@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireAdmin }                  from '@/lib/auth/require-admin'
 import { rejectCandidate, AdminError }   from '@/services/admin.service'
+import { z }                             from 'zod'
+
+const bodySchema = z.object({
+  reason: z.string().max(1000).optional(),
+})
 
 export async function POST(
   req: NextRequest,
@@ -13,8 +18,12 @@ export async function POST(
 
   let reason = ''
   try {
-    const body = await req.json() as { reason?: string }
-    reason = body.reason?.trim() ?? ''
+    const raw    = await req.json()
+    const parsed = bodySchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid reason.' } }, { status: 422 })
+    }
+    reason = parsed.data.reason?.trim() ?? ''
   } catch {
     // Body is optional
   }

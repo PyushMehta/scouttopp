@@ -16,8 +16,7 @@ export async function GET(request: NextRequest) {
   if (oauthError) {
     console.error('[auth/callback] OAuth error:', oauthError, oauthErrorDesc)
     const url = new URL(ROUTES.auth.login, base)
-    url.searchParams.set('error', oauthError)
-    if (oauthErrorDesc) url.searchParams.set('error_description', oauthErrorDesc)
+    url.searchParams.set('error', 'oauth_error')
     return NextResponse.redirect(url)
   }
 

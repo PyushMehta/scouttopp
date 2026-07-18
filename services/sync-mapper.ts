@@ -63,6 +63,22 @@ const ROLE_MAP: Record<string, string> = {
   'social media':       'social_media',
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const URL_RE   = /^https?:\/\/.+/i
+
+// Maximum lengths matching candidate_profiles column constraints
+const MAX_LENGTHS: Partial<Record<keyof MappedCandidate, number>> = {
+  full_name:        200,
+  email:            254,
+  phone:            30,
+  location_city:    100,
+  location_country: 100,
+  timezone:         100,
+  pronouns:         50,
+  bio:              2000,
+  primary_role:     100,
+}
+
 function findColumnValue(rawData: Record<string, string>, patterns: string[]): string | null {
   for (const [header, value] of Object.entries(rawData)) {
     const h = header.toLowerCase()
@@ -73,6 +89,17 @@ function findColumnValue(rawData: Record<string, string>, patterns: string[]): s
     }
   }
   return null
+}
+
+function sanitizeText(value: string | null | undefined, key: keyof MappedCandidate): string | null {
+  if (!value) return null
+  const max = MAX_LENGTHS[key]
+  return max ? value.slice(0, max) : value
+}
+
+function sanitizeUrl(value: string | null | undefined): string | null {
+  if (!value) return null
+  return URL_RE.test(value) ? value : null
 }
 
 function mapRole(raw: string | null): string | null {
@@ -99,15 +126,19 @@ export function mapSheetRow(row: SheetRow): MapResult {
       result[key] = mapRole(raw)
     } else if (key === 'years_experience') {
       const n = raw ? parseInt(raw, 10) : NaN
-      result[key] = isNaN(n) ? null : n
+      result[key] = isNaN(n) || n < 0 || n > 60 ? null : n
+    } else if (key === 'avatar_url' || key === 'portfolio_url' || key === 'linkedin_url' ||
+               key === 'instagram_url' || key === 'website_url' || key === 'resume_url') {
+      result[key] = sanitizeUrl(raw) ?? undefined
     } else {
-      result[key] = raw ?? undefined
+      result[key] = sanitizeText(raw, key) ?? undefined
     }
   }
 
   const errors: string[] = []
   if (!result.full_name) errors.push('Missing full_name')
   if (!result.email)     errors.push('Missing email')
+  if (result.email && !EMAIL_RE.test(result.email)) errors.push('Invalid email format')
 
   if (errors.length > 0) return { mapped: null, errors }
 

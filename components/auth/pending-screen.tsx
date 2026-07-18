@@ -1,5 +1,9 @@
+'use client'
+
 import { Clock, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface PendingScreenProps {
   email?:        string
@@ -10,6 +14,13 @@ interface PendingScreenProps {
 
 export function PendingScreen({ email, role, hasFilledForm, formUrl }: PendingScreenProps) {
   const isEmployer = role === 'employer'
+  const router = useRouter()
+  const supabase = createClient()
+
+  async function handleSwitchAccount() {
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   return (
     <div className="flex-1 flex items-center justify-center px-6 py-12 lg:py-16">
@@ -143,13 +154,14 @@ export function PendingScreen({ email, role, hasFilledForm, formUrl }: PendingSc
         {/* Sign out link */}
         <p className="text-sm text-center text-muted">
           Not the right account?{' '}
-          <Link
-            href="/auth/login"
+          <button
+            type="button"
+            onClick={handleSwitchAccount}
             className="font-semibold transition-colors duration-150 hover:underline"
             style={{ color: '#2B3875' }}
           >
             Sign in with a different account
-          </Link>
+          </button>
         </p>
 
       </div>

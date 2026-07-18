@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
+import { serverError }                   from '@/lib/api-error'
 
 const DEFAULTS = {
   open_to_remote:     true,
@@ -23,7 +24,7 @@ const patchSchema = z.object({
   open_to_fulltime:   z.boolean().optional(),
   rate_min_hourly:    z.number().int().min(0).max(100000).nullable().optional(),
   rate_max_hourly:    z.number().int().min(0).max(100000).nullable().optional(),
-  available_from:     z.string().nullable().optional(),
+  available_from:     z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   notice_period_days: z.number().int().min(0).max(365).nullable().optional(),
 })
 
@@ -39,7 +40,7 @@ export async function GET() {
     .maybeSingle()
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/preferences GET', error)
   }
 
   return NextResponse.json({ success: true, data: data ?? { candidate_id: auth.candidateProfileId, ...DEFAULTS } })
@@ -73,7 +74,7 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/preferences PATCH', error)
   }
 
   return NextResponse.json({ success: true, data })

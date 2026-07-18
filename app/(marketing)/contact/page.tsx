@@ -11,7 +11,8 @@ interface ContactPageProps {
   searchParams: Promise<{ type?: string }>
 }
 
-const SUPPORT_EMAIL = 'support@scouttopp.com'
+const SUPPORT_EMAIL   = 'support@scouttopp.com'
+const EMPLOYERS_EMAIL = 'employers@scouttopp.com'
 
 export default async function ContactPage({ searchParams }: ContactPageProps) {
   const { type } = await searchParams
@@ -54,7 +55,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           <div className="space-y-4">
             {/* Employer access card */}
             <a
-              href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Employer Access Request — ScouttOpp')}&body=${encodeURIComponent('Hi ScouttOpp team,\n\nI\'d like to request employer access.\n\nCompany name:\nIndustry:\nTypical roles I hire for:\nWebsite:\n\nTell us more:\n')}`}
+              href={`mailto:${EMPLOYERS_EMAIL}?subject=${encodeURIComponent('Employer Access Request — ScouttOpp')}&body=${encodeURIComponent('Hi ScouttOpp team,\n\nI\'d like to request employer access.\n\nCompany name:\nIndustry:\nTypical roles I hire for:\nWebsite:\n\nTell us more:\n')}`}
               className="flex items-start gap-4 p-5 rounded-2xl border transition-shadow hover:shadow-md group"
               style={{ borderColor: 'var(--color-flax)', background: '#FFFFFF' }}
             >

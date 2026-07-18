@@ -231,11 +231,23 @@ export function SignupForm() {
         </div>
 
         {/* ── Google OAuth ── */}
-        <GoogleButton
-          label="Sign up with Google"
-          loading={googleLoading}
-          onClick={handleGoogle}
-        />
+        <div className="space-y-2">
+          <GoogleButton
+            label="Sign up with Google"
+            loading={googleLoading}
+            onClick={handleGoogle}
+          />
+          <p className="text-xs text-center text-muted leading-relaxed">
+            By continuing, you agree to our{' '}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground" target="_blank" rel="noopener noreferrer">
+              Terms &amp; Conditions
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground" target="_blank" rel="noopener noreferrer">
+              Privacy Policy
+            </Link>.
+          </p>
+        </div>
 
         <AuthDivider />
 
@@ -282,17 +294,17 @@ export function SignupForm() {
                 <>
                   I agree to the{' '}
                   <Link
-                    href="/legal/terms"
+                    href="/terms"
                     className="font-semibold hover:underline"
                     style={{ color: '#2B3875' }}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Terms of Service
+                    Terms &amp; Conditions
                   </Link>{' '}
                   and{' '}
                   <Link
-                    href="/legal/privacy"
+                    href="/privacy"
                     className="font-semibold hover:underline"
                     style={{ color: '#2B3875' }}
                     target="_blank"

@@ -1,8 +1,9 @@
-import { NextResponse }     from 'next/server'
-import { requireAdmin }     from '@/lib/auth/require-admin'
+import { NextResponse }        from 'next/server'
+import { requireAdmin }        from '@/lib/auth/require-admin'
 import { createServiceClient } from '@/lib/supabase/server'
-import { fetchSheetRows }   from '@/services/sheets.service'
-import { mapSheetRow }      from '@/services/sync-mapper'
+import { fetchSheetRows }      from '@/services/sheets.service'
+import { mapSheetRow }         from '@/services/sync-mapper'
+import type { TablesInsert }   from '@/types'
 
 function err(code: string, message: string, status: number) {
   return NextResponse.json({ success: false, error: { code, message } }, { status })
@@ -41,84 +42,111 @@ export async function POST() {
   try {
     const rows = await fetchSheetRows()
 
-    // Fetch existing emails + phones from staging and canonical to detect duplicates
+    // Fetch emails/phones already in staging (skip re-inserting) and already approved (true duplicates)
     const [{ data: existingStaging }, { data: existingCanonical }] = await Promise.all([
       supabase
         .from('candidate_sync_staging')
-        .select('mapped_data, status')
-        .in('status', ['pending', 'promoted']),
+        .select('mapped_data')
+        .in('status', ['pending', 'promoted', 'duplicate']),
       supabase
         .from('candidate_profiles')
         .select('email, phone'),
     ])
 
-    const existingEmails = new Set([
-      ...(existingStaging ?? [])
+    // Already in staging → skip silently (already queued for review)
+    const stagingEmails = new Set(
+      (existingStaging ?? [])
         .map(s => (s.mapped_data as Record<string, unknown> | null)?.email as string | undefined)
         .filter(Boolean)
-        .map(e => e!.toLowerCase()),
-      ...(existingCanonical ?? [])
-        .map(c => c.email as string | undefined)
-        .filter(Boolean)
-        .map(e => e!.toLowerCase()),
-    ])
-
-    // Phone dedup: same phone = same person trying with a different email
-    const existingPhones = new Set([
-      ...(existingStaging ?? [])
+        .map(e => e!.toLowerCase())
+    )
+    const stagingPhones = new Set(
+      (existingStaging ?? [])
         .map(s => (s.mapped_data as Record<string, unknown> | null)?.phone as string | undefined)
         .filter(Boolean)
-        .map(p => p!.replace(/\D/g, '')), // strip non-digits for loose matching
-      ...(existingCanonical ?? [])
+        .map(p => p!.replace(/\D/g, ''))
+        .filter(p => p.length >= 7)
+    )
+
+    // Already approved → mark as duplicate
+    const approvedEmails = new Set(
+      (existingCanonical ?? [])
+        .map(c => c.email as string | undefined)
+        .filter(Boolean)
+        .map(e => e!.toLowerCase())
+    )
+    const approvedPhones = new Set(
+      (existingCanonical ?? [])
         .map(c => c.phone as string | undefined)
         .filter(Boolean)
-        .map(p => p!.replace(/\D/g, '')),
-    ])
+        .map(p => p!.replace(/\D/g, ''))
+        .filter(p => p.length >= 7)
+    )
+
+    // Track emails/phones seen in this batch to catch same-person double submissions in the sheet
+    const batchEmails = new Set<string>()
+    const batchPhones = new Set<string>()
 
     let rowsSkipped = 0
     let rowsErrored = 0
 
-    const inserts = rows.map(row => {
+    const inserts: TablesInsert<'candidate_sync_staging'>[] = []
+
+    for (const row of rows) {
       const { mapped, errors } = mapSheetRow(row)
 
       if (!mapped) {
         rowsErrored++
-        return {
+        inserts.push({
           sync_run_id:       syncRun.id,
           google_sheets_row: row.rowIndex,
           raw_data:          row.rawData,
           mapped_data:       null,
           status:            'error' as const,
           error_message:     errors.join('; '),
-        }
+        })
+        continue
       }
 
+      const emailKey   = mapped.email.toLowerCase()
       const phoneDigits = mapped.phone?.replace(/\D/g, '') ?? ''
-      const isEmailDup = existingEmails.has(mapped.email.toLowerCase())
-      const isPhoneDup = phoneDigits.length >= 7 && existingPhones.has(phoneDigits)
+      const hasPhone   = phoneDigits.length >= 7
 
-      if (isEmailDup || isPhoneDup) {
+      // Already in staging from a previous sync → skip entirely
+      if (stagingEmails.has(emailKey) || (hasPhone && stagingPhones.has(phoneDigits))) {
         rowsSkipped++
-        return {
+        continue
+      }
+
+      // Already approved, or filled the form twice in the sheet
+      const isApprovedDup = approvedEmails.has(emailKey) || (hasPhone && approvedPhones.has(phoneDigits))
+      const isBatchDup    = batchEmails.has(emailKey)    || (hasPhone && batchPhones.has(phoneDigits))
+
+      if (isApprovedDup || isBatchDup) {
+        inserts.push({
           sync_run_id:       syncRun.id,
           google_sheets_row: row.rowIndex,
           raw_data:          row.rawData,
-          mapped_data:       mapped as unknown as Record<string, unknown>,
+          mapped_data:       mapped as unknown as TablesInsert<'candidate_sync_staging'>['mapped_data'],
           status:            'duplicate' as const,
-          error_message:     isPhoneDup && !isEmailDup
-            ? `Possible duplicate: phone number matches an existing candidate (different email: ${mapped.email})`
-            : undefined,
-        }
+          error_message:     isBatchDup
+            ? `Duplicate submission: same person filled the form twice (${hasPhone && batchPhones.has(phoneDigits) && !batchEmails.has(emailKey) ? 'phone match' : 'email match'})`
+            : `Already an approved candidate.`,
+        })
+        continue
       }
 
-      return {
+      batchEmails.add(emailKey)
+      if (hasPhone) batchPhones.add(phoneDigits)
+
+      inserts.push({
         sync_run_id:       syncRun.id,
         google_sheets_row: row.rowIndex,
         raw_data:          row.rawData,
-        mapped_data:       mapped as unknown as Record<string, unknown>,
+        mapped_data:       mapped as unknown as TablesInsert<'candidate_sync_staging'>['mapped_data'],
         status:            'pending' as const,
-      }
-    })
+      })
+    }
 
     if (inserts.length > 0) {
       await supabase.from('candidate_sync_staging').insert(inserts)
@@ -159,13 +187,13 @@ export async function POST() {
     })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown sync error'
-    console.error('[sync/run] error:', message)
+    console.error('[sync/run] error:', e)
 
     await supabase
       .from('sync_runs')
       .update({ status: 'failed', error_message: message, completed_at: new Date().toISOString() })
       .eq('id', syncRun.id)
 
-    return err('SYNC_FAILED', message, 502)
+    return err('SYNC_FAILED', 'Sync failed. Check server logs for details.', 502)
   }
 }

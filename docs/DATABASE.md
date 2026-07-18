@@ -1,7 +1,7 @@
 # ScouttOpp — Database Reference
 ### Supabase / PostgreSQL Schema v1.0
 
-> **Status:** ✅ Migrations written in Phase 2. Run `supabase db push` to deploy. See `supabase/migrations/`.  
+> **Status:** ✅ All 6 migrations written and applied to production Supabase project. Run via SQL Editor (paste each file in order). See `supabase/migrations/` and `docs/DEPLOYMENT.md` for the full migration table.  
 > This document is the authoritative reference for every table, column, constraint, relationship, policy, trigger, and migration strategy. Update it before making any schema change.
 
 ---

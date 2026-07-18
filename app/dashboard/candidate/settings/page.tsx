@@ -62,7 +62,7 @@ export default async function SettingsPage() {
       </div>
 
       <div className="space-y-5">
-        <AccountSettings email={user.email ?? ''} />
+        <AccountSettings email={user.email ?? ''} provider={user.app_metadata?.provider ?? 'email'} />
         <PreferencesForm preferences={preferences} />
         <VisibilitySection initialPaused={candidateProfile.discovery_paused} />
         <DangerZone />

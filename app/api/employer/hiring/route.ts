@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-import { requireEmployer } from '@/lib/auth/require-employer'
-import { createServiceClient } from '@/lib/supabase/server'
+import { z }                         from 'zod'
+import { requireEmployer }           from '@/lib/auth/require-employer'
+import { createServiceClient }       from '@/lib/supabase/server'
+import { serverError }               from '@/lib/api-error'
 
 const ROLE_VALUES = [
   'motion_designer', 'graphic_designer', 'ux_designer', 'brand_designer',
@@ -55,6 +56,6 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ success: false, error: { code: 'DB_ERROR', message: error.message } }, { status: 500 })
+  if (error) return serverError('employer/hiring PATCH', error)
   return NextResponse.json({ success: true, data })
 }

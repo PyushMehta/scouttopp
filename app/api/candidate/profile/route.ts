@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
-import type { Database } from '@/lib/supabase/types'
+import type { Database }                 from '@/lib/supabase/types'
+import { serverError }                   from '@/lib/api-error'
 
 type CandidateProfileUpdate = Database['public']['Tables']['candidate_profiles']['Update']
 
@@ -92,7 +93,7 @@ export async function PATCH(req: NextRequest) {
     .single()
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/profile PATCH', error)
   }
 
   return NextResponse.json({ success: true, data })

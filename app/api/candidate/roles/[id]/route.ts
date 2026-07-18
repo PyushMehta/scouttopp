@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }               from '@/lib/auth/require-candidate'
 import { createServiceClient }            from '@/lib/supabase/server'
 import { updateCompleteness }             from '@/lib/candidate-completeness'
+import { serverError }                    from '@/lib/api-error'
 
 interface Params { params: Promise<{ id: string }> }
 
@@ -31,7 +32,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     .eq('candidate_id', auth.candidateProfileId)
 
   if (error) {
-    return NextResponse.json({ success: false, error: { message: error.message } }, { status: 500 })
+    return serverError('candidate/roles/[id] DELETE', error)
   }
 
   // If we deleted the primary role, promote the next role and sync the profile field
@@ -103,7 +104,7 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
     .eq('id', id)
 
   if (error) {
-    return NextResponse.json({ success: false, error: { message: error.message } }, { status: 500 })
+    return serverError('candidate/roles/[id] PATCH', error)
   }
 
   // Sync denormalized field — DB trigger handles updated_at

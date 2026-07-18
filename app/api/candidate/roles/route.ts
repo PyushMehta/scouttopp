@@ -3,6 +3,7 @@ import { requireCandidate }               from '@/lib/auth/require-candidate'
 import { createServiceClient }            from '@/lib/supabase/server'
 import { updateCompleteness }             from '@/lib/candidate-completeness'
 import { z }                              from 'zod'
+import { serverError }                    from '@/lib/api-error'
 
 const MAX_ROLES = 5
 
@@ -24,7 +25,7 @@ export async function GET() {
     .order('created_at')
 
   if (error) {
-    return NextResponse.json({ success: false, error: { message: error.message } }, { status: 500 })
+    return serverError('candidate/roles GET', error)
   }
 
   return NextResponse.json({ success: true, data: data ?? [] })
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
         { status: 409 },
       )
     }
-    return NextResponse.json({ success: false, error: { message: error.message } }, { status: 500 })
+    return serverError('candidate/roles POST', error)
   }
 
   // Keep candidate_profiles.primary_role in sync

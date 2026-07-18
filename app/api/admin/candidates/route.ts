@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireAdmin }                  from '@/lib/auth/require-admin'
 import { createServiceClient }           from '@/lib/supabase/server'
+import { serverError }                   from '@/lib/api-error'
 
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin()
@@ -11,8 +12,14 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status') ?? 'pending'
   const page   = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
   const limit  = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '25', 10)))
-  const search = searchParams.get('search')?.trim() ?? ''
   const offset = (page - 1) * limit
+
+  // Validate search: max 200 chars, no PostgREST metacharacters (comma injects extra OR conditions)
+  const rawSearch = searchParams.get('search')?.trim() ?? ''
+  if (rawSearch.length > 200 || /[,()]/.test(rawSearch)) {
+    return NextResponse.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid search query.' } }, { status: 422 })
+  }
+  const search = rawSearch
 
   const supabase = createServiceClient()
 
@@ -33,10 +40,7 @@ export async function GET(req: NextRequest) {
     const { data, count, error } = await query
 
     if (error) {
-      return NextResponse.json(
-        { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } },
-        { status: 500 },
-      )
+      return serverError('admin/candidates GET staging', error)
     }
 
     const candidates = (data ?? [])
@@ -93,10 +97,7 @@ export async function GET(req: NextRequest) {
   const { data, count, error } = await query
 
   if (error) {
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_ERROR', message: error.message } },
-      { status: 500 },
-    )
+    return serverError('admin/candidates GET canonical', error)
   }
 
   const candidates = (data ?? []).map(cp => ({

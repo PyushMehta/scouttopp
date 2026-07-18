@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
 import { z }                             from 'zod'
+import { serverError }                   from '@/lib/api-error'
 
 const MEDIA_TYPES = ['image', 'video', 'link', 'pdf'] as const
 
@@ -50,8 +51,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .select()
     .single()
 
-  if (error || !data) {
-    return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: error?.message ?? 'Item not found.' } }, { status: 404 })
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Item not found.' } }, { status: 404 })
+    }
+    return serverError('candidate/portfolio/[id] PATCH', error)
+  }
+  if (!data) {
+    return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Item not found.' } }, { status: 404 })
   }
 
   return NextResponse.json({ success: true, data })
@@ -71,7 +78,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     .eq('candidate_id', auth.candidateProfileId)
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: error.message } }, { status: 500 })
+    return serverError('candidate/portfolio/[id] DELETE', error)
   }
 
   return NextResponse.json({ success: true })

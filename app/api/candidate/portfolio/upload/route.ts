@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireCandidate }              from '@/lib/auth/require-candidate'
 import { createServiceClient }           from '@/lib/supabase/server'
-import { randomUUID }                     from 'crypto'
+import { randomUUID }                    from 'crypto'
+import { serverError }                   from '@/lib/api-error'
+import { mimeMatchesBuffer }             from '@/lib/file-magic'
 
 const MAX_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
 const BUCKET         = 'portfolio'
@@ -42,6 +44,11 @@ export async function POST(req: NextRequest) {
 
   const path    = `${auth.candidateProfileId}/${randomUUID()}.${typeInfo.ext}`
   const buffer  = Buffer.from(await file.arrayBuffer())
+
+  if (!mimeMatchesBuffer(file.type, buffer)) {
+    return NextResponse.json({ success: false, error: { code: 'INVALID_FILE_TYPE', message: 'File content does not match the declared type.' } }, { status: 422 })
+  }
+
   const service = createServiceClient()
 
   const { error: uploadErr } = await service.storage
@@ -49,7 +56,7 @@ export async function POST(req: NextRequest) {
     .upload(path, buffer, { contentType: file.type, upsert: false })
 
   if (uploadErr) {
-    return NextResponse.json({ success: false, error: { code: 'UPLOAD_FAILED', message: uploadErr.message } }, { status: 500 })
+    return serverError('candidate/portfolio/upload storage', uploadErr)
   }
 
   // Signed URL works whether the bucket is public or private.
@@ -58,7 +65,7 @@ export async function POST(req: NextRequest) {
     .createSignedUrl(path, 60 * 60 * 24 * 365) // 1 year
 
   if (signedErr || !signedData) {
-    return NextResponse.json({ success: false, error: { code: 'URL_FAILED', message: signedErr?.message ?? 'Could not generate media URL.' } }, { status: 500 })
+    return serverError('candidate/portfolio/upload signed URL', signedErr ?? 'no signed data')
   }
 
   return NextResponse.json({
