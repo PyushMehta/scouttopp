@@ -17,8 +17,12 @@ async function getAccessToken(): Promise<string> {
     throw new Error('Missing GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY env vars')
   }
 
-  // .env files escape newlines as \n — restore them for the PEM parser
-  const privateKey = rawKey.replace(/\\n/g, '\n')
+  // Normalize the private key regardless of how Netlify/env stored it:
+  // strip surrounding quotes, convert literal \n to real newlines, normalize line endings
+  const privateKey = rawKey
+    .replace(/^["']|["']$/g, '')   // remove quotes Netlify may have added
+    .replace(/\\n/g, '\n')          // literal \n → real newline
+    .replace(/\r\n/g, '\n')         // CRLF → LF
 
   const now = Math.floor(Date.now() / 1000)
   const header  = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
