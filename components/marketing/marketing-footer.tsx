@@ -3,8 +3,8 @@ import Link from 'next/link'
 const productLinks = [
   { label: 'Features', href: '/features' },
   { label: 'FAQ', href: '/faq' },
-  { label: 'For Creatives', href: '/features#candidates' },
-  { label: 'For Employers', href: '/features#employers' },
+  { label: 'For Creatives', href: '/#for-you' },
+  { label: 'For Employers', href: '/contact?type=employer' },
 ]
 
 const companyLinks = [
