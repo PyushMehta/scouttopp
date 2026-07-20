@@ -1,6 +1,5 @@
 import { type Metadata } from 'next'
 import { HeroSection } from '@/components/marketing/hero-section'
-import { CompanyMarquee } from '@/components/marketing/company-marquee'
 import { ProblemSection } from '@/components/marketing/problem-section'
 import { SolutionSection } from '@/components/marketing/solution-section'
 import { HowItWorksSection } from '@/components/marketing/how-it-works-section'
@@ -19,7 +18,6 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <CompanyMarquee />
       <ProblemSection />
       <SolutionSection />
       <HowItWorksSection />
