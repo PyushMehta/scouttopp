@@ -74,6 +74,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/blog') ||
     pathname.startsWith('/privacy') ||
     pathname.startsWith('/terms') ||
+    pathname.startsWith('/trust') ||
     pathname.startsWith('/cookies') ||
     pathname.startsWith('/community-guidelines') ||
     pathname.startsWith('/copyright') ||

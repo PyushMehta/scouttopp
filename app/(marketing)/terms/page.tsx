@@ -203,7 +203,107 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section id="contact" title="14. Contact">
+      <Section id="cookies" title="14. Cookie Policy">
+        <p>
+          ScouttOpp currently uses <strong>one cookie</strong>: a first-party, HTTP-only Supabase session
+          token that keeps you authenticated. It is strictly necessary and cannot be disabled without breaking
+          platform login. We do not use advertising, analytics, or third-party tracking cookies. When Google
+          OAuth is used, Google may set its own cookies governed by Google&apos;s Privacy Policy.
+        </p>
+        <p>
+          If we introduce non-essential cookies in future, we will update this section and display a consent
+          banner before setting them. Cookie enquiries:{' '}
+          <a href="mailto:privacy@scouttopp.com">privacy@scouttopp.com</a>
+        </p>
+      </Section>
+
+      <Section id="copyright" title="15. Copyright & Intellectual Property">
+        <Sub title="Ownership">
+          <p>
+            Candidates retain full ownership of uploaded portfolio content. By uploading, you grant ScouttOpp
+            a limited licence to store and display it for platform purposes only (see §4). ScouttOpp owns all
+            rights to its name, logo, brand, UI, and codebase.
+          </p>
+        </Sub>
+        <Sub title="Takedown requests">
+          <p>
+            If you believe content on ScouttOpp infringes your copyright, email{' '}
+            <a href="mailto:copyright@scouttopp.com">copyright@scouttopp.com</a> with: identification of
+            the original work, the infringing URL, your contact information, a good-faith statement, and
+            your signature. We will acknowledge within 5 business days and remove valid claims promptly.
+            Multiple substantiated claims will result in permanent account termination.
+          </p>
+        </Sub>
+        <Sub title="Counter-notices">
+          <p>
+            If your content was removed in error, email{' '}
+            <a href="mailto:copyright@scouttopp.com">copyright@scouttopp.com</a> with identification of
+            the removed content and a statement that removal was mistaken. We will review and may restore it.
+          </p>
+        </Sub>
+      </Section>
+
+      <Section id="disclaimer" title="16. Disclaimer">
+        <p>ScouttOpp is a technology platform only — not a recruitment agency or employment intermediary.
+          We do not guarantee job offers, interviews, or hires. While we manually verify candidates before
+          granting access, we do not independently verify every claim in candidate or employer profiles.
+          <strong> Employers must conduct their own due diligence before making hiring decisions.</strong>
+          Nothing on ScouttOpp constitutes legal, financial, or HR advice. The Platform is provided on an
+          &ldquo;as available&rdquo; basis — we are not liable for losses arising from downtime or errors.
+        </p>
+      </Section>
+
+      <Section id="ai-policy" title="17. AI Usage Policy">
+        <p>
+          As of the date of these Terms, ScouttOpp does <strong>not</strong> use AI to score candidates,
+          make hiring recommendations, or generate content on behalf of users. Our candidate review process
+          is entirely manual. We use PostHog for standard product analytics only.
+        </p>
+        <p>
+          We plan to introduce AI-powered matching and discovery ranking features in future. When introduced,
+          we will: update this section and notify users in advance; not use AI to automatically accept or
+          reject applications; conduct bias assessments before launch; and give users the right to request
+          human review of any AI-influenced decision. We will not share personal data with AI providers for
+          training without explicit consent. Enquiries: <a href="mailto:privacy@scouttopp.com">privacy@scouttopp.com</a>
+        </p>
+      </Section>
+
+      <Section id="account-deletion" title="18. Account Deletion">
+        <Sub title="How to delete">
+          <p>
+            Go to <strong>Dashboard → Settings → Account → Danger Zone → Delete Account</strong> and confirm.
+            Alternatively, email <a href="mailto:support@scouttopp.com">support@scouttopp.com</a> from your
+            registered address; we will process within 5 business days. Deletion is permanent and irreversible.
+          </p>
+        </Sub>
+        <Sub title="What gets deleted">
+          <p>
+            Login credentials are removed immediately. Profile data, uploaded files, preferences, and settings
+            are deleted within 30 days. Your profile is removed from discovery results immediately.
+          </p>
+        </Sub>
+        <Sub title="What we retain">
+          <p>
+            Server logs (up to 90 days, security), original application data (up to 90 days, audit trail),
+            and anonymised/aggregated analytics (no personal data, indefinitely). Employer notes referencing
+            your profile are deleted when the employer deletes their account or on request.
+          </p>
+        </Sub>
+        <Sub title="Data export">
+          <p>
+            Before deleting, you may request a JSON export of your profile data by emailing{' '}
+            <a href="mailto:privacy@scouttopp.com">privacy@scouttopp.com</a>. We will provide it within 14 days.
+          </p>
+        </Sub>
+        <Sub title="Re-joining">
+          <p>
+            After deletion your email is removed from the platform. To re-join you must re-apply via the
+            candidate application form. Previous approval does not guarantee re-approval.
+          </p>
+        </Sub>
+      </Section>
+
+      <Section id="contact" title="19. Contact">
         <p>
           <strong>ScouttOpp</strong><br />
           Legal: <a href={`mailto:${LEGAL_EMAIL}`}>{LEGAL_EMAIL}</a><br />
