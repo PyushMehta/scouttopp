@@ -12,7 +12,7 @@ export function LegalPageShell({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen py-24 lg:py-32" data-color-scheme="light">
+    <div className="min-h-screen py-24 lg:py-32" data-color-scheme="light" style={{ background: 'var(--color-warm-white)', color: 'var(--color-charcoal)' }}>
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
         <div className="mb-14">
           <span
