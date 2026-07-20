@@ -266,3 +266,42 @@ body {
   .animate-shake         { animation: none; }
   .animate-pulse-ring    { animation: none; }
 }
+
+/* ─── Blog prose ─────────────────────────────────────────────────────────── */
+.prose-scoutt {
+  color: var(--color-stone, #8A8070);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.prose-scoutt p,
+.prose-scoutt ul,
+.prose-scoutt ol {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.prose-scoutt h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2C2C2C;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+.prose-scoutt ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+.prose-scoutt ul li,
+.prose-scoutt ol li {
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+.prose-scoutt strong {
+  color: #2C2C2C;
+  font-weight: 700;
+}
+.prose-scoutt a {
+  color: #2B3875;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
