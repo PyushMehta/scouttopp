@@ -23,8 +23,10 @@ export const metadata: Metadata = {
   title: { default: 'ScouttOpp', template: '%s | ScouttOpp' },
   description: 'The invitation-only platform for creative professionals. Get discovered through your work — not just your resume.',
   icons: {
-    icon: '/scoutt.png',
-    apple: '/scoutt.png',
+    icon: [
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    apple: '/icon.png',
   },
   openGraph: {
     title: "Talent this good doesn't come from a job board.",
