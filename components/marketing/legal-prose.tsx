@@ -12,37 +12,34 @@ export function LegalPageShell({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen py-24 lg:py-32" data-color-scheme="light" style={{ background: 'var(--color-warm-white)', color: 'var(--color-charcoal)' }}>
+    <div className="min-h-screen py-24 lg:py-32">
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
         <div className="mb-14">
           <span
             className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest border mb-6"
-            style={{ background: 'rgba(43,56,117,0.06)', borderColor: 'rgba(43,56,117,0.18)', color: 'var(--color-navy)' }}
+            style={{ background: 'rgba(107,95,174,0.08)', borderColor: 'rgba(107,95,174,0.2)', color: 'var(--color-secondary)' }}
           >
             Legal
           </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-charcoal mb-4">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-foreground mb-4">
             {title}
           </h1>
-          <p className="text-stone text-sm">Effective date: {date}</p>
-          <p className="mt-4 text-base text-stone leading-relaxed max-w-xl">{intro}</p>
+          <p className="text-muted text-sm">Effective date: {date}</p>
+          <p className="mt-4 text-base text-muted leading-relaxed max-w-xl">{intro}</p>
         </div>
 
         <div
           className="rounded-2xl border p-5 mb-12 flex gap-3 items-start"
-          style={{ borderColor: 'rgba(196,124,26,0.3)', background: 'rgba(196,124,26,0.05)' }}
+          style={{ borderColor: 'rgba(196,124,26,0.3)', background: 'rgba(196,124,26,0.06)' }}
         >
           <span className="text-base shrink-0 mt-0.5">⚠️</span>
-          <p className="text-sm leading-relaxed" style={{ color: '#7a4e0a' }}>
+          <p className="text-sm leading-relaxed text-warning">
             This document was drafted as a starting point and should be reviewed by a qualified legal
             professional before going live. It is not a substitute for legal advice.
           </p>
         </div>
 
-        <div
-          className="space-y-10"
-          style={{ color: 'var(--color-charcoal)', lineHeight: '1.75', fontSize: '0.9375rem' }}
-        >
+        <div className="space-y-10 text-foreground" style={{ lineHeight: '1.75', fontSize: '0.9375rem' }}>
           {children}
         </div>
       </div>
@@ -54,11 +51,10 @@ export function Section({ id, title, children }: { id: string; title: string; ch
   return (
     <section id={id} className="scroll-mt-24">
       <h2
-        className="text-xl font-bold mb-4 pb-3 border-b"
-        style={{ color: 'var(--color-charcoal)', borderColor: 'var(--color-flax)' }}
+        className="text-xl font-bold mb-4 pb-3 border-b text-foreground border-border"
         dangerouslySetInnerHTML={{ __html: title }}
       />
-      <div className="space-y-4 [&_ul]:pl-5 [&_ul]:space-y-2 [&_li]:list-disc [&_a]:underline [&_a]:decoration-dotted [&_strong]:font-semibold [&_table]:w-full [&_table]:text-sm [&_table]:border-collapse [&_th]:text-left [&_th]:pb-2 [&_th]:font-semibold [&_th]:border-b [&_th]:border-[rgba(43,56,117,0.12)] [&_td]:py-2 [&_td]:pr-6 [&_td]:align-top [&_tr]:border-b [&_tr]:border-[rgba(43,56,117,0.06)]">
+      <div className="space-y-4 text-muted [&_ul]:pl-5 [&_ul]:space-y-2 [&_li]:list-disc [&_a]:underline [&_a]:decoration-dotted [&_a]:text-primary [&_strong]:font-semibold [&_strong]:text-foreground [&_table]:w-full [&_table]:text-sm [&_table]:border-collapse [&_th]:text-left [&_th]:pb-2 [&_th]:font-semibold [&_th]:border-b [&_th]:border-border [&_td]:py-2 [&_td]:pr-6 [&_td]:align-top [&_tr]:border-b [&_tr]:border-border">
         {children}
       </div>
     </section>
@@ -68,10 +64,10 @@ export function Section({ id, title, children }: { id: string; title: string; ch
 export function Sub({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-navy)' }}>
+      <h3 className="text-sm font-semibold mb-2 text-primary">
         {title}
       </h3>
-      <div className="space-y-2 [&_ul]:pl-5 [&_ul]:space-y-2 [&_li]:list-disc [&_strong]:font-semibold">
+      <div className="space-y-2 text-muted [&_ul]:pl-5 [&_ul]:space-y-2 [&_li]:list-disc [&_strong]:font-semibold [&_strong]:text-foreground">
         {children}
       </div>
     </div>

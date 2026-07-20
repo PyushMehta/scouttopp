@@ -11,18 +11,18 @@ export const metadata: Metadata = {
 export default function FeaturesPage() {
   return (
     <>
-      <div className="py-16 lg:py-20 text-center" data-color-scheme="light" style={{ background: 'var(--color-warm-white)' }}>
+      <div className="py-16 lg:py-20 text-center">
         <div className="max-w-3xl mx-auto px-6 lg:px-8">
           <span
             className="inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest border mb-6"
-            style={{ background: 'rgba(43,56,117,0.06)', borderColor: 'rgba(43,56,117,0.18)', color: 'var(--color-navy)' }}
+            style={{ background: 'rgba(107,95,174,0.08)', borderColor: 'rgba(107,95,174,0.2)', color: 'var(--color-secondary)' }}
           >
             Platform
           </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-charcoal mb-4">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-foreground mb-4">
             Everything built around the work
           </h1>
-          <p className="text-lg leading-relaxed" style={{ color: 'var(--color-stone)' }}>
+          <p className="text-lg leading-relaxed text-muted">
             ScouttOpp is designed from the ground up for creative talent — where portfolios lead and
             resumes follow.
           </p>
