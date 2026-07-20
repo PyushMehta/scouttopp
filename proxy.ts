@@ -73,7 +73,15 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/faq') ||
     pathname.startsWith('/blog') ||
     pathname.startsWith('/privacy') ||
-    pathname.startsWith('/terms')
+    pathname.startsWith('/terms') ||
+    pathname.startsWith('/cookies') ||
+    pathname.startsWith('/community-guidelines') ||
+    pathname.startsWith('/copyright') ||
+    pathname.startsWith('/disclaimer') ||
+    pathname.startsWith('/ai-policy') ||
+    pathname.startsWith('/candidate-verification') ||
+    pathname.startsWith('/employer-verification') ||
+    pathname.startsWith('/account-deletion')
   ) {
     return NextResponse.next({ request })
   }
