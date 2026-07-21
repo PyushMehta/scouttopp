@@ -15,7 +15,7 @@ export function HeroSection() {
       aria-label="Hero"
       style={{ background: '#0D0A14' }}
     >
-      {/* Full-screen video background */}
+      {/* Full-screen video background — low opacity so watermark doesn't bleed through */}
       <video
         autoPlay
         muted
@@ -23,6 +23,7 @@ export function HeroSection() {
         playsInline
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ opacity: 0.18 }}
       >
         <source src="/videos/hero-bg.mp4" type="video/mp4" />
         <source
@@ -30,16 +31,6 @@ export function HeroSection() {
           type="video/mp4"
         />
       </video>
-
-      {/* Dark overlay — heavy enough to subdue the footage */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'linear-gradient(to bottom, rgba(5,3,10,0.82) 0%, rgba(5,3,10,0.75) 60%, rgba(5,3,10,0.88) 100%)',
-        }}
-      />
 
       {/* Purple accent orb */}
       <div
@@ -75,8 +66,8 @@ export function HeroSection() {
               initial="hidden"
               animate="visible"
               transition={{ ...transitions.normal, delay }}
-              className="block font-extrabold text-white leading-none tracking-tight"
-              style={{ fontSize: 'clamp(2.4rem, 5vw, 5.5rem)', letterSpacing: '-0.03em' }}
+              className="block font-extrabold leading-none tracking-tight"
+              style={{ fontSize: 'clamp(2.4rem, 5vw, 5.5rem)', letterSpacing: '-0.03em', color: '#FFFFFF', textShadow: '0 2px 20px rgba(0,0,0,0.8)' }}
             >
               {text}
               {extraWord && (
