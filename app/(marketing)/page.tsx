@@ -4,6 +4,7 @@ import { ProblemSection } from '@/components/marketing/problem-section'
 import { SolutionSection } from '@/components/marketing/solution-section'
 import { HowItWorksSection } from '@/components/marketing/how-it-works-section'
 import { ForYouSection } from '@/components/marketing/for-you-section'
+import { TestimonialsSection } from '@/components/marketing/testimonials-section'
 import { FeaturesSection } from '@/components/marketing/features-section'
 import { FaqSection } from '@/components/marketing/faq-section'
 import { FinalCtaSection } from '@/components/marketing/final-cta-section'
@@ -22,6 +23,7 @@ export default function HomePage() {
       <SolutionSection />
       <HowItWorksSection />
       <ForYouSection />
+      <TestimonialsSection />
       <FeaturesSection />
       <FaqSection />
       <FinalCtaSection />

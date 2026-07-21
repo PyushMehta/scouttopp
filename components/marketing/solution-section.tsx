@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { X, Check, ArrowRight } from 'lucide-react'
 import { fadeUpVariants, transitions } from '@/lib/tokens'
 import { SectionHeader } from './section-header'
@@ -14,6 +14,8 @@ const comparisons = [
 ]
 
 export function SolutionSection() {
+  const prefersReduced = useReducedMotion()
+
   return (
     <section className="py-16 lg:py-24" aria-label="The solution">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -35,7 +37,7 @@ export function SolutionSection() {
             transition={{ ...transitions.normal, delay: 0.1 }}
             className="flex-1 rounded-2xl p-8"
             style={{
-              background: '#FFFFFF',
+              background: 'var(--color-card)',
               border: '1px solid rgba(0,0,0,0.08)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             }}
@@ -58,7 +60,7 @@ export function SolutionSection() {
           {/* Arrow */}
           <div className="flex items-center justify-center">
             <motion.div
-              animate={{ x: [0, 6, 0] }}
+              animate={prefersReduced ? {} : { x: [0, 6, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               className="text-muted rotate-90 md:rotate-0"
             >
@@ -75,7 +77,7 @@ export function SolutionSection() {
             transition={{ ...transitions.normal, delay: 0.2 }}
             className="flex-1 rounded-2xl p-8"
             style={{
-              background: '#FFFFFF',
+              background: 'var(--color-card)',
               border: '1px solid rgba(124,58,237,0.25)',
               boxShadow: '0 1px 3px rgba(124,58,237,0.08)',
             }}

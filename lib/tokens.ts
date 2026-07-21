@@ -1,5 +1,15 @@
 import type { Variants, Transition } from 'framer-motion'
 
+/* ─── Instant (reduced-motion) variants ───────────────────────────────── */
+// Use these when useReducedMotion() returns true. Content is immediately
+// visible; only the transform is skipped, not the opacity gate.
+
+export const instantVariants: Variants = {
+  hidden:  { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0 },
+  exit:    { opacity: 0 },
+}
+
 /* ─── Transitions ──────────────────────────────────────────────────────── */
 
 export const transitions = {

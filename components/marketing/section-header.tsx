@@ -1,8 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { fadeUpVariants, transitions } from '@/lib/tokens'
+import { fadeUpVariants, instantVariants, transitions } from '@/lib/tokens'
 import { EyebrowBadge } from './eyebrow-badge'
 
 interface SectionHeaderProps {
@@ -22,6 +22,9 @@ export function SectionHeader({
   className,
   light = false,
 }: SectionHeaderProps) {
+  const prefersReduced = useReducedMotion()
+  const variants = prefersReduced ? instantVariants : fadeUpVariants
+
   return (
     <div
       className={cn(
@@ -32,7 +35,7 @@ export function SectionHeader({
     >
       {eyebrow && (
         <motion.div
-          variants={fadeUpVariants}
+          variants={variants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -54,12 +57,13 @@ export function SectionHeader({
           )}
         </motion.div>
       )}
+      {/* heading must never start invisible — headings are used by screen readers for navigation */}
       <motion.h2
-        variants={fadeUpVariants}
-        initial="hidden"
+        variants={variants}
+        initial={prefersReduced ? 'visible' : 'hidden'}
         whileInView="visible"
         viewport={{ once: true }}
-        transition={{ ...transitions.normal, delay: 0.08 }}
+        transition={{ ...transitions.normal, delay: prefersReduced ? 0 : 0.08 }}
         className={cn(
           'font-extrabold tracking-tight leading-tight mb-4',
           'text-3xl sm:text-4xl lg:text-5xl',
@@ -69,11 +73,11 @@ export function SectionHeader({
       </motion.h2>
       {subtext && (
         <motion.p
-          variants={fadeUpVariants}
+          variants={variants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          transition={{ ...transitions.normal, delay: 0.16 }}
+          transition={{ ...transitions.normal, delay: prefersReduced ? 0 : 0.16 }}
           className="text-muted text-base sm:text-lg leading-relaxed"
         >
           {subtext}

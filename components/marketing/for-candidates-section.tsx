@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -19,7 +19,7 @@ function ProfileCardMockup() {
     <div
       className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto"
       style={{
-        background: '#FFFFFF',
+        background: 'var(--color-card)',
         border: '1px solid rgba(43,56,117,0.1)',
         boxShadow: '0 4px 24px rgba(43,56,117,0.1)',
       }}
@@ -95,7 +95,7 @@ export function ForCandidatesSection() {
               className="text-muted leading-relaxed mb-8"
             >
               Whether you are looking for your first online job, exploring internship opportunities,
-              or searching for your next role — Scoutt Opp helps you get discovered through your work,
+              or searching for your next role — ScouttOpp helps you get discovered through your work,
               not just your resume. Employers come to you based on your skills and portfolio.
             </motion.p>
             <motion.ul
@@ -132,7 +132,7 @@ export function ForCandidatesSection() {
                   boxShadow: '0 4px 16px rgba(43,56,117,0.25)',
                 }}
               >
-                Apply as a candidate
+                Apply as a creative
                 <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </motion.div>

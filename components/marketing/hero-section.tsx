@@ -1,27 +1,36 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Play, ChevronDown } from 'lucide-react'
 import { fadeUpVariants, transitions } from '@/lib/tokens'
 import { EyebrowBadge } from './eyebrow-badge'
 
 export function HeroSection() {
+  const prefersReduced = useReducedMotion()
+
   return (
     <section
       className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       aria-label="Hero"
     >
-      {/* Full-screen video background — place video at /public/videos/hero-bg.mp4 */}
+      {/* Full-screen video background */}
       <video
         autoPlay
         muted
         loop
         playsInline
         aria-hidden="true"
+        poster="/hero-poster.jpg"
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/marketing/hero-bg.mp4`}
-      />
+        style={{ background: '#0D0A14' }}
+      >
+        <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        <source
+          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/marketing/hero-bg.mp4`}
+          type="video/mp4"
+        />
+      </video>
 
       {/* Dark overlay for readability */}
       <div
@@ -113,7 +122,7 @@ export function HeroSection() {
               boxShadow: '0 0 28px rgba(124, 58, 237, 0.35)',
             }}
           >
-            Apply as a candidate
+            Apply as a creative
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
           </Link>
           <Link
@@ -134,7 +143,7 @@ export function HeroSection() {
           className="flex items-center justify-center mt-20"
         >
           <motion.div
-            animate={{ y: [0, 6, 0] }}
+            animate={prefersReduced ? {} : { y: [0, 6, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           >
             <ChevronDown size={20} style={{ color: 'rgba(255,255,255,0.4)' }} aria-hidden="true" />

@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, CheckCircle, User, Sparkles, Building2, Search, Star, Zap } from 'lucide-react'
 import { transitions } from '@/lib/tokens'
+import { EMPLOYER_ENABLED } from '@/lib/flags'
 import { SectionHeader } from './section-header'
 
 const candidateSteps = [
@@ -62,7 +64,7 @@ const employerSteps = [
 
 type Tab = 'candidates' | 'employers'
 
-const tabs: { id: Tab; label: string }[] = [
+const allTabs: { id: Tab; label: string }[] = [
   { id: 'candidates', label: 'For Candidates' },
   { id: 'employers',  label: 'For Employers' },
 ]
@@ -110,6 +112,7 @@ function StepsGrid({ steps }: { steps: typeof candidateSteps }) {
 
 export function HowItWorksSection() {
   const [active, setActive] = useState<Tab>('candidates')
+  const tabs = EMPLOYER_ENABLED ? allTabs : allTabs.filter((t) => t.id === 'candidates')
 
   return (
     <section
@@ -126,39 +129,49 @@ export function HowItWorksSection() {
           />
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex justify-center mb-8">
-          <div
-            className="relative flex rounded-full p-1 gap-1"
-            style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.14)' }}
-          >
-            {tabs.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setActive(id)}
-                className="relative rounded-full px-6 py-2 text-sm font-semibold transition-colors duration-200"
-                style={{ color: active === id ? '#FFFFFF' : 'var(--color-muted)' }}
-                aria-pressed={active === id}
-              >
-                {active === id && (
-                  <motion.span
-                    layoutId="hiw-tab-pill"
-                    className="absolute inset-0 rounded-full"
-                    style={{ background: 'rgba(124,58,237,0.35)', border: '1px solid rgba(124,58,237,0.4)' }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                  />
-                )}
-                <span className="relative z-10">{label}</span>
-              </button>
-            ))}
+        {/* Tab switcher — only shown when employer feature is enabled */}
+        {tabs.length > 1 && (
+          <div className="flex justify-center mb-8">
+            <div
+              role="tablist"
+              aria-label="View steps for candidates or employers"
+              className="relative flex rounded-full p-1 gap-1"
+              style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.14)' }}
+            >
+              {tabs.map(({ id, label }) => (
+                <button
+                  key={id}
+                  role="tab"
+                  type="button"
+                  onClick={() => setActive(id)}
+                  className="relative rounded-full px-6 py-2 text-sm font-semibold transition-colors duration-200"
+                  style={{ color: active === id ? '#FFFFFF' : 'var(--color-muted)' }}
+                  aria-selected={active === id}
+                  aria-controls={`hiw-panel-${id}`}
+                  id={`hiw-tab-${id}`}
+                >
+                  {active === id && (
+                    <motion.span
+                      layoutId="hiw-tab-pill"
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: 'rgba(124,58,237,0.35)', border: '1px solid rgba(124,58,237,0.4)' }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                    />
+                  )}
+                  <span className="relative z-10">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Steps */}
         <AnimatePresence mode="wait">
           <motion.div
             key={active}
+            role="tabpanel"
+            id={`hiw-panel-${active}`}
+            aria-labelledby={`hiw-tab-${active}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -167,6 +180,16 @@ export function HowItWorksSection() {
             <StepsGrid steps={active === 'candidates' ? candidateSteps : employerSteps} />
           </motion.div>
         </AnimatePresence>
+
+        {/* Employer coming-soon note — shown during Candidate Beta */}
+        {!EMPLOYER_ENABLED && (
+          <p className="mt-10 text-center text-sm" style={{ color: 'var(--color-muted)' }}>
+            Employer access is coming soon.{' '}
+            <Link href="/contact" className="underline underline-offset-2 hover:opacity-80 transition-opacity">
+              Join the waitlist →
+            </Link>
+          </p>
+        )}
       </div>
     </section>
   )

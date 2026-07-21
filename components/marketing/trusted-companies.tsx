@@ -16,7 +16,7 @@ export function TrustedCompanies() {
         onClick={() => { setOpen(v => !v); setSelected(null) }}
         className="w-full flex items-center justify-between rounded-2xl px-6 py-4 border transition-colors duration-150 text-left group"
         style={{
-          background: open ? 'rgba(43,56,117,0.04)' : '#FFFFFF',
+          background: open ? 'rgba(43,56,117,0.04)' : 'var(--color-card)',
           borderColor: open ? 'rgba(43,56,117,0.25)' : 'var(--color-flax)',
         }}
         aria-expanded={open}
@@ -50,7 +50,7 @@ export function TrustedCompanies() {
                 onClick={() => setSelected(isSelected ? null : company)}
                 className="flex items-center gap-3 p-4 rounded-xl border text-left transition-all duration-150"
                 style={{
-                  background: isSelected ? 'rgba(43,56,117,0.05)' : '#FFFFFF',
+                  background: isSelected ? 'rgba(43,56,117,0.05)' : 'var(--color-card)',
                   borderColor: isSelected ? 'rgba(43,56,117,0.3)' : 'var(--color-flax)',
                   boxShadow: isSelected ? '0 0 0 1px rgba(43,56,117,0.2)' : 'none',
                 }}

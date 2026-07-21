@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 const productLinks = [
   { label: 'Features', href: '/features' },
@@ -41,7 +42,7 @@ export function MarketingFooter() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block hover:opacity-80 transition-opacity mb-3">
-              <img src="/scoutt.png" alt="ScouttOpp" className="h-8 w-auto" />
+              <Image src="/scoutt.png" alt="ScouttOpp" height={32} width={120} className="h-8 w-auto" />
             </Link>
             <p className="text-sm text-muted leading-relaxed max-w-xs">
               The creative talent marketplace built on intention.

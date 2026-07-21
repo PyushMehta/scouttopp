@@ -62,7 +62,7 @@ export function TestimonialsSection() {
               whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 30 } }}
               className="rounded-2xl p-8 flex flex-col cursor-default transition-shadow duration-200"
               style={{
-                background: '#FFFFFF',
+                background: 'var(--color-card)',
                 border: '1px solid rgba(0,0,0,0.07)',
                 boxShadow: '0 1px 3px rgba(43,56,117,0.06)',
               }}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -25,7 +25,7 @@ function ProfileCardMockup() {
     <div
       className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto"
       style={{
-        background: '#FFFFFF',
+        background: 'var(--color-card)',
         border: '1px solid rgba(43,56,117,0.1)',
         boxShadow: '0 4px 24px rgba(43,56,117,0.1)',
       }}
@@ -76,7 +76,7 @@ function CandidatesContent() {
           className="text-muted leading-relaxed mb-8"
         >
           Whether you are looking for your first online job, exploring internship opportunities,
-          or searching for your next role — Scoutt Opp helps you get discovered through your work,
+          or searching for your next role — ScouttOpp helps you get discovered through your work,
           not just your resume. Employers come to you based on your skills and portfolio.
         </motion.p>
         <motion.ul
@@ -107,7 +107,7 @@ function CandidatesContent() {
               boxShadow: '0 4px 16px rgba(43,56,117,0.25)',
             }}
           >
-            Apply as a candidate
+            Apply as a creative
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
           </Link>
         </motion.div>
@@ -196,7 +196,7 @@ function EmployersContent() {
             transition={{ ...transitions.normal, delay: 0.06 * (i + 1) }}
             className="rounded-2xl p-6"
             style={{
-              background: '#FFFFFF',
+              background: 'var(--color-card)',
               border: '1px solid rgba(43,56,117,0.08)',
               boxShadow: '0 1px 3px rgba(43,56,117,0.06)',
             }}
@@ -266,19 +266,24 @@ export function ForYouSection() {
         {/* Tab switcher */}
         <div className="flex justify-center mb-8">
           <div
+            role="tablist"
+            aria-label="View for candidates or employers"
             className="relative flex rounded-full p-1 gap-1"
             style={{ background: 'rgba(43,56,117,0.07)', border: '1px solid rgba(43,56,117,0.1)' }}
           >
             {tabs.map(({ id, label }) => (
               <button
                 key={id}
+                role="tab"
                 type="button"
                 onClick={() => setActive(id)}
                 className="relative z-10 rounded-full px-6 py-2 text-sm font-semibold transition-colors duration-200"
                 style={{
                   color: active === id ? '#FFFFFF' : 'var(--color-stone)',
                 }}
-                aria-pressed={active === id}
+                aria-selected={active === id}
+                aria-controls={`foryou-panel-${id}`}
+                id={`foryou-tab-${id}`}
               >
                 {active === id && (
                   <motion.span
@@ -298,6 +303,9 @@ export function ForYouSection() {
         <AnimatePresence mode="wait">
           <motion.div
             key={active}
+            role="tabpanel"
+            id={`foryou-panel-${active}`}
+            aria-labelledby={`foryou-tab-${active}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}

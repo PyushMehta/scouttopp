@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,19 +11,19 @@ const faqs = [
     group: 'General',
     items: [
       {
-        q: 'Is Scoutt Opp free for candidates?',
+        q: 'Is ScouttOpp free for candidates?',
         a: 'Yes. Creating a profile and applying is completely free for candidates.',
       },
       {
         q: 'What kind of jobs are available?',
-        a: 'Scoutt Opp features full-time jobs, freelance projects, contract roles, remote work, and internships from verified employers.',
+        a: 'ScouttOpp features full-time jobs, freelance projects, contract roles, remote work, and internships from verified employers.',
       },
       {
-        q: 'Is Scoutt Opp only for creative professionals?',
-        a: 'We started with creatives because portfolios matter, but Scoutt Opp is expanding to help professionals across multiple industries connect with the right employers.',
+        q: 'Is ScouttOpp only for creative professionals?',
+        a: 'We started with creatives because portfolios matter, but ScouttOpp is expanding to help professionals across multiple industries connect with the right employers.',
       },
       {
-        q: 'How does Scoutt Opp review candidates?',
+        q: 'How does ScouttOpp review candidates?',
         a: 'Every application is reviewed by our team. We evaluate portfolios, experience, and overall quality before approving profiles.',
       },
       {
@@ -32,14 +32,14 @@ const faqs = [
       },
       {
         q: 'Can freshers apply?',
-        a: 'Absolutely. Scoutt Opp supports fresher hiring and encourages students, graduates, and early-career professionals to apply.',
+        a: 'Absolutely. ScouttOpp supports fresher hiring and encourages students, graduates, and early-career professionals to apply.',
       },
       {
-        q: 'Does Scoutt Opp offer internships?',
-        a: 'Yes. Companies regularly post internship opportunities, making Scoutt Opp an excellent platform for students and graduates looking to gain real-world experience.',
+        q: 'Does ScouttOpp offer internships?',
+        a: 'Yes. Companies regularly post internship opportunities, making ScouttOpp an excellent platform for students and graduates looking to gain real-world experience.',
       },
       {
-        q: 'How do employers hire through Scoutt Opp?',
+        q: 'How do employers hire through ScouttOpp?',
         a: 'Employers request access, browse verified candidates, express interest, and connect directly when there\'s a mutual match.',
       },
       {
@@ -48,11 +48,7 @@ const faqs = [
       },
       {
         q: 'Can I apply for jobs online?',
-        a: 'Yes. Every opportunity on Scoutt Opp can be accessed through a simple online application, allowing employers to review your profile and portfolio together.',
-      },
-      {
-        q: 'Does Scoutt Opp help with Google hiring?',
-        a: 'Many users search for Google hiring and other top companies. While Scoutt Opp is not affiliated with Google, we help candidates build strong profiles and portfolios that improve their chances of getting noticed by leading employers across industries.',
+        a: 'Yes. Every opportunity on ScouttOpp can be accessed through a simple online application, allowing employers to review your profile and portfolio together.',
       },
     ],
   },
@@ -60,6 +56,7 @@ const faqs = [
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
+  const id = q.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
   return (
     <div style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
@@ -67,6 +64,8 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between gap-4 py-5 text-left"
         aria-expanded={open}
+        aria-controls={`faq-answer-${id}`}
+        id={`faq-question-${id}`}
       >
         <span className="text-sm font-semibold" style={{ color: 'var(--color-charcoal)' }}>
           {q}
@@ -88,6 +87,9 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         {open && (
           <motion.div
             key="answer"
+            id={`faq-answer-${id}`}
+            role="region"
+            aria-labelledby={`faq-question-${id}`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -136,7 +138,7 @@ export function FaqSection() {
               <div
                 className="rounded-2xl overflow-hidden px-6"
                 style={{
-                  background: '#FFFFFF',
+                  background: 'var(--color-card)',
                   border: '1px solid rgba(0,0,0,0.07)',
                   boxShadow: '0 1px 3px rgba(43,56,117,0.06)',
                 }}

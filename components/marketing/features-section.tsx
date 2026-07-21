@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { LayoutGrid, Shield, Sparkles, MessageSquare, Users, Briefcase, BarChart3, Lock } from 'lucide-react'
+import { LayoutGrid, Shield, Users, Briefcase, Lock } from 'lucide-react'
 import { fadeUpVariants, transitions } from '@/lib/tokens'
 import { SectionHeader } from './section-header'
 
@@ -9,42 +9,27 @@ const features = [
   {
     Icon: LayoutGrid,
     title: 'Portfolio First',
-    body: 'Your work tells your story better than a traditional CV. Showcase the projects that actually represent your skills.',
+    body: 'Your work tells your story better than a CV. Showcase the projects that actually represent your skills.',
   },
   {
     Icon: Shield,
-    title: 'Verified Talent',
-    body: 'Every candidate is manually reviewed before joining the platform, creating a trusted community for employers.',
-  },
-  {
-    Icon: Sparkles,
-    title: 'Smart Matching',
-    body: 'We match talent and employers based on skills, preferences, availability, and role requirements.',
-  },
-  {
-    Icon: MessageSquare,
-    title: 'Direct Connections',
-    body: 'When both sides are interested, conversations begin immediately. No middlemen. No unnecessary delays.',
+    title: 'Invitation-Only Network',
+    body: 'Every profile is manually reviewed before joining. That means fewer irrelevant introductions — and more meaningful ones.',
   },
   {
     Icon: Users,
-    title: 'Built for Every Stage',
-    body: 'Whether you are entering through fresher hiring, searching for an internship, or looking for your next full-time role — Scoutt Opp supports your journey.',
+    title: 'For Every Stage',
+    body: 'Whether you are a fresher, seeking an internship, or looking for your next full-time role — ScouttOpp supports your journey.',
   },
   {
     Icon: Briefcase,
     title: 'Jobs & Internships',
-    body: 'Discover internships, freelance projects, contract work, and full-time online job opportunities from growing companies.',
-  },
-  {
-    Icon: BarChart3,
-    title: 'Employer Dashboard',
-    body: 'Review verified profiles, browse portfolios, shortlist candidates, and hire faster from one platform.',
+    body: 'Full-time roles, freelance projects, contract work, and internships — all from verified, growing companies.',
   },
   {
     Icon: Lock,
-    title: 'Secure & Private',
-    body: 'Control who sees your profile and when you are available for opportunities. Your data, your terms.',
+    title: 'Your Visibility, Your Terms',
+    body: 'Control exactly who can see your profile and when. Pause discovery any time — no explanation needed.',
   },
 ]
 
@@ -60,13 +45,13 @@ export function FeaturesSection() {
         <div className="text-center mb-8">
           <SectionHeader
             eyebrow="Features"
-            heading="Everything you need to hire or get hired."
-            subtext="Built for quality over quantity — from freshers to experienced professionals."
+            heading="Everything you need to get hired."
+            subtext="Built for quality over quantity — from freshers to senior creative professionals."
             light
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map(({ Icon, title, body }, i) => (
             <motion.div
               key={title}
@@ -78,7 +63,7 @@ export function FeaturesSection() {
               whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 30 } }}
               className="rounded-2xl p-7 group cursor-default transition-shadow duration-200"
               style={{
-                background: '#FFFFFF',
+                background: 'var(--color-card)',
                 border: '1px solid rgba(0,0,0,0.07)',
                 boxShadow: '0 1px 3px rgba(43,56,117,0.06)',
               }}

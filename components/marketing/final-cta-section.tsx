@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -50,7 +50,7 @@ export function FinalCtaSection() {
           transition={{ ...transitions.normal, delay: 0.16 }}
           className="text-lg text-muted leading-relaxed mb-12 max-w-xl mx-auto"
         >
-          Scoutt Opp is built for ambitious professionals at every stage — freshers, interns,
+          ScouttOpp is built for ambitious professionals at every stage — freshers, interns,
           and experienced hires. Apply once, get reviewed by our team, and let your work do the rest.
         </motion.p>
         <motion.div
