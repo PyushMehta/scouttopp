@@ -89,7 +89,7 @@ function CandidatesContent() {
           {candidateBenefits.map((benefit) => (
             <li key={benefit} className="flex items-start gap-3">
               <CheckCircle size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--color-brand-success)' }} />
-              <span className="text-sm" style={{ color: 'var(--color-foreground)' }}>{benefit}</span>
+              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{benefit}</span>
             </li>
           ))}
         </motion.ul>
