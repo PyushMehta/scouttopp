@@ -113,7 +113,6 @@ export function FaqSection() {
       id="faq"
       className="py-16 lg:py-24"
       aria-label="Frequently asked questions"
-      style={{ background: 'var(--color-background)' }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-8">

@@ -73,7 +73,6 @@ export function ForCandidatesSection() {
       data-color-scheme="light"
       id="for-candidates"
       className="py-32 lg:py-40"
-      style={{ background: 'var(--color-background)' }}
       aria-label="For creatives"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">

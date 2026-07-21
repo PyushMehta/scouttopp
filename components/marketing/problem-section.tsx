@@ -29,7 +29,6 @@ export function ProblemSection() {
       data-color-scheme="light"
       className="py-16 lg:py-24"
       aria-label="The problem"
-      style={{ background: 'var(--color-background)' }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
