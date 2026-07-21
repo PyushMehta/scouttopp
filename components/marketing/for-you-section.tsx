@@ -23,6 +23,7 @@ const candidateBenefits = [
 function ProfileCardMockup() {
   return (
     <div
+      data-color-scheme="light"
       className="rounded-2xl overflow-hidden w-full max-w-sm mx-auto"
       style={{
         background: 'var(--color-card)',
@@ -89,7 +90,7 @@ function CandidatesContent() {
           {candidateBenefits.map((benefit) => (
             <li key={benefit} className="flex items-start gap-3">
               <CheckCircle size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--color-brand-success)' }} />
-              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{benefit}</span>
+              <span className="text-sm" style={{ color: 'var(--color-foreground)' }}>{benefit}</span>
             </li>
           ))}
         </motion.ul>
@@ -190,6 +191,7 @@ function EmployersContent() {
         {employerCapabilities.map(({ Icon, title, description }, i) => (
           <motion.div
             key={title}
+            data-color-scheme="light"
             variants={fadeUpVariants}
             initial="hidden"
             animate="visible"
@@ -248,7 +250,6 @@ export function ForYouSection() {
 
   return (
     <section
-      data-color-scheme="light"
       id="for-you"
       className="py-16 lg:py-24"
       aria-label="For candidates and employers"
