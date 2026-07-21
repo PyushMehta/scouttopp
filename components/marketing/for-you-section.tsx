@@ -252,6 +252,7 @@ export function ForYouSection() {
       id="for-you"
       className="py-16 lg:py-24"
       aria-label="For candidates and employers"
+      style={{ background: 'var(--color-background)' }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section header */}
