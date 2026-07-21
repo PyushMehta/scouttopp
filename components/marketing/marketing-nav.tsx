@@ -88,19 +88,29 @@ export function MarketingNav() {
         style={
           scrolled
             ? {
-                background: 'var(--color-surface)',
+                background: 'rgba(10, 8, 20, 0.92)',
                 backdropFilter: 'blur(20px) saturate(180%)',
-                borderColor: 'var(--color-border)',
-                opacity: 0.95,
+                borderColor: 'rgba(255,255,255,0.08)',
               }
-            : { background: 'transparent' }
+            : {
+                background: 'rgba(10, 8, 20, 0.55)',
+                backdropFilter: 'blur(8px)',
+                borderColor: 'transparent',
+              }
         }
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="hover:opacity-80 transition-opacity" aria-label="ScouttOpp home">
-              <Image src="/scoutt.png" alt="ScouttOpp" height={36} width={120} className="h-9 w-auto" />
+              <Image
+                src="/scoutt.png"
+                alt="ScouttOpp"
+                height={36}
+                width={120}
+                className="h-9 w-auto rounded-xl"
+                style={{ mixBlendMode: 'screen' }}
+              />
             </Link>
 
             {/* Desktop Nav */}
@@ -109,10 +119,10 @@ export function MarketingNav() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={cn(
-                    'text-sm font-medium transition-colors duration-150',
-                    pathname === link.href ? 'text-foreground' : 'text-muted hover:text-foreground',
-                  )}
+                  className="text-sm font-medium transition-colors duration-150"
+                  style={{ color: pathname === link.href ? '#FFFFFF' : 'rgba(255,255,255,0.6)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#FFFFFF')}
+                  onMouseLeave={e => (e.currentTarget.style.color = pathname === link.href ? '#FFFFFF' : 'rgba(255,255,255,0.6)')}
                 >
                   {link.label}
                 </Link>
