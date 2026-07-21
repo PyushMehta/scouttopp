@@ -13,39 +13,15 @@ export function HeroSection() {
     <section
       className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       aria-label="Hero"
+      style={{ background: 'linear-gradient(160deg, #0D0A14 0%, #12082A 50%, #0A0A0A 100%)' }}
     >
-      {/* Full-screen video background */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        aria-hidden="true"
-        poster="/hero-poster.jpg"
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ background: '#0D0A14' }}
-      >
-        <source src="/videos/hero-bg.mp4" type="video/mp4" />
-        <source
-          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/marketing/hero-bg.mp4`}
-          type="video/mp4"
-        />
-      </video>
-
-      {/* Dark overlay for readability */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'rgba(10,10,10,0.62)' }}
-      />
-
-      {/* Purple accent orb — subtle on top of video */}
+      {/* Purple accent orb */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-125"
         style={{
           background:
-            'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124, 58, 237, 0.1) 0%, transparent 70%)',
+            'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124, 58, 237, 0.25) 0%, transparent 70%)',
         }}
       />
 
