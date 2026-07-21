@@ -129,7 +129,7 @@ export function FaqSection() {
             >
               <p
                 className="text-xs font-semibold uppercase tracking-widest mb-4"
-                style={{ color: 'var(--color-navy)' }}
+                style={{ color: '#A78BFA' }}
               >
                 {group}
               </p>

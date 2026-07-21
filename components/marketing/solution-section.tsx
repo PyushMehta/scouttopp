@@ -35,11 +35,12 @@ export function SolutionSection() {
             transition={{ ...transitions.normal, delay: 0.1 }}
             className="flex-1 rounded-2xl p-8"
             style={{
-              background: 'var(--color-card)',
-              border: '1px solid var(--color-border)',
+              background: '#FFFFFF',
+              border: '1px solid rgba(0,0,0,0.08)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             }}
           >
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: '#8A8070' }}>
               The old way
             </p>
             <ul className="space-y-4">
@@ -48,7 +49,7 @@ export function SolutionSection() {
                   <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
                     <X size={12} style={{ color: 'rgba(239,68,68,0.7)' }} />
                   </span>
-                  <span className="text-sm text-muted">{old}</span>
+                  <span className="text-sm" style={{ color: '#8A8070' }}>{old}</span>
                 </li>
               ))}
             </ul>
@@ -74,9 +75,9 @@ export function SolutionSection() {
             transition={{ ...transitions.normal, delay: 0.2 }}
             className="flex-1 rounded-2xl p-8"
             style={{
-              background: 'rgba(124,58,237,0.06)',
-              border: '1px solid rgba(124,58,237,0.2)',
-              boxShadow: '0 0 40px rgba(124,58,237,0.08)',
+              background: '#FFFFFF',
+              border: '1px solid rgba(124,58,237,0.25)',
+              boxShadow: '0 1px 3px rgba(124,58,237,0.08)',
             }}
           >
             <p className="text-xs font-semibold uppercase tracking-widest mb-6" style={{ color: '#A78BFA' }}>
@@ -85,10 +86,10 @@ export function SolutionSection() {
             <ul className="space-y-4">
               {comparisons.map(({ new: newWay }) => (
                 <li key={newWay} className="flex items-center gap-3">
-                  <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.2)' }}>
-                    <Check size={12} style={{ color: 'var(--color-primary)' }} />
+                  <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.15)' }}>
+                    <Check size={12} style={{ color: '#7C3AED' }} />
                   </span>
-                  <span className="text-sm text-foreground font-medium">{newWay}</span>
+                  <span className="text-sm font-medium" style={{ color: '#2C2620' }}>{newWay}</span>
                 </li>
               ))}
             </ul>
