@@ -13,8 +13,34 @@ export function HeroSection() {
     <section
       className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       aria-label="Hero"
-      style={{ background: 'linear-gradient(160deg, #0D0A14 0%, #12082A 50%, #0A0A0A 100%)' }}
+      style={{ background: '#0D0A14' }}
     >
+      {/* Full-screen video background */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+      >
+        <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        <source
+          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/marketing/hero-bg.mp4`}
+          type="video/mp4"
+        />
+      </video>
+
+      {/* Dark overlay — heavy enough to subdue the footage */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(5,3,10,0.82) 0%, rgba(5,3,10,0.75) 60%, rgba(5,3,10,0.88) 100%)',
+        }}
+      />
+
       {/* Purple accent orb */}
       <div
         aria-hidden="true"
