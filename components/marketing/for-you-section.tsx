@@ -89,7 +89,7 @@ function CandidatesContent() {
           {candidateBenefits.map((benefit) => (
             <li key={benefit} className="flex items-start gap-3">
               <CheckCircle size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--color-brand-success)' }} />
-              <span className="text-sm" style={{ color: 'var(--color-charcoal)' }}>{benefit}</span>
+              <span className="text-sm" style={{ color: 'var(--color-foreground)' }}>{benefit}</span>
             </li>
           ))}
         </motion.ul>
@@ -252,7 +252,6 @@ export function ForYouSection() {
       id="for-you"
       className="py-16 lg:py-24"
       aria-label="For candidates and employers"
-      style={{ background: 'var(--color-background)' }}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Section header */}

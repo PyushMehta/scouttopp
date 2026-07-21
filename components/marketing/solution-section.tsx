@@ -17,12 +17,7 @@ export function SolutionSection() {
   const prefersReduced = useReducedMotion()
 
   return (
-    <section
-      data-color-scheme="light"
-      className="py-16 lg:py-24"
-      aria-label="The solution"
-      style={{ background: 'var(--color-background)' }}
-    >
+    <section className="py-16 lg:py-24" aria-label="The solution">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-8">
           <SectionHeader
@@ -42,7 +37,7 @@ export function SolutionSection() {
             transition={{ ...transitions.normal, delay: 0.1 }}
             className="flex-1 rounded-2xl p-8"
             style={{
-              background: 'var(--color-card)',
+              background: '#FFFFFF',
               border: '1px solid rgba(0,0,0,0.08)',
               boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             }}
@@ -82,7 +77,7 @@ export function SolutionSection() {
             transition={{ ...transitions.normal, delay: 0.2 }}
             className="flex-1 rounded-2xl p-8"
             style={{
-              background: 'var(--color-card)',
+              background: '#FFFFFF',
               border: '1px solid rgba(124,58,237,0.25)',
               boxShadow: '0 1px 3px rgba(124,58,237,0.08)',
             }}
