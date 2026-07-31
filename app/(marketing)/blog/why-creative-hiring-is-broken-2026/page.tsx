@@ -2,22 +2,52 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
+const BASE = 'https://scouttopp.com'
+const POST_URL = `${BASE}/blog/why-creative-hiring-is-broken-2026`
+
 export const metadata: Metadata = {
   title: 'Why Creative Hiring Is Broken in 2026 (And What Needs to Change)',
   description:
     'The creative industry has never been bigger — yet hiring creative talent remains surprisingly difficult. We break down why and what the future should look like.',
+  keywords: ['creative hiring', 'creative jobs 2026', 'portfolio hiring', 'fresher jobs', 'creative talent platform'],
   openGraph: {
     title: 'Why Creative Hiring Is Broken in 2026 (And What Needs to Change)',
-    description:
-      'The creative industry has never been bigger — yet hiring creative talent remains surprisingly difficult. We break down why and what the future should look like.',
+    description: 'The creative industry has never been bigger — yet hiring creative talent remains surprisingly difficult. We break down why and what the future should look like.',
     type: 'article',
     publishedTime: '2026-07-20',
+    url: POST_URL,
+    siteName: 'ScouttOpp',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Why Creative Hiring Is Broken in 2026',
+    description: 'The hiring process hasn\'t evolved with the creative industry. Here\'s why — and what needs to change.',
+  },
+  alternates: { canonical: POST_URL },
+}
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Why Creative Hiring Is Broken in 2026 (And What Needs to Change)',
+  description: 'The creative industry has never been bigger — yet hiring creative talent remains surprisingly difficult. We break down why and what the future should look like.',
+  datePublished: '2026-07-20',
+  dateModified: '2026-07-20',
+  url: POST_URL,
+  publisher: {
+    '@type': 'Organization',
+    name: 'ScouttOpp',
+    url: BASE,
+    logo: { '@type': 'ImageObject', url: `${BASE}/scoutt.png` },
+  },
+  author: { '@type': 'Organization', name: 'ScouttOpp', url: BASE },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': POST_URL },
 }
 
 export default function BlogPost() {
   return (
     <div className="min-h-screen py-16 lg:py-24" data-color-scheme="light">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <article className="max-w-2xl mx-auto px-6 lg:px-8">
 
         {/* Back link */}

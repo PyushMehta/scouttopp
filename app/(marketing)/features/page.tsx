@@ -4,8 +4,9 @@ import { ForYouSection } from '@/components/marketing/for-you-section'
 import { FinalCtaSection } from '@/components/marketing/final-cta-section'
 
 export const metadata: Metadata = {
-  title: 'Features',
-  description: 'How ScouttOpp works — invitation-only candidate profiles, portfolio-first discovery, and verified employers.',
+  title: 'Platform Features — Portfolio-First Hiring for Creative Talent | ScouttOpp',
+  description: 'How ScouttOpp works: invitation-only candidate profiles, portfolio-first discovery, verified employers, and visibility controls for creative professionals.',
+  alternates: { canonical: 'https://scouttopp.com/features' },
 }
 
 export default function FeaturesPage() {

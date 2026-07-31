@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'About',
-  description: 'ScouttOpp is a curated creative talent marketplace built on intention — connecting verified creative professionals with the employers who value their work.',
+  title: 'About ScouttOpp — The Creative Talent Platform Built on Intention',
+  description: 'ScouttOpp is a curated creative talent marketplace connecting verified creative professionals with employers who value their work. Learn why we built it.',
+  alternates: { canonical: 'https://scouttopp.com/about' },
 }
 
 export default function AboutPage() {

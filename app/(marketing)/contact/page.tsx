@@ -2,8 +2,9 @@ import type { Metadata }    from 'next'
 import { Mail, Building2, User, MessageSquare, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Contact',
-  description: 'Get in touch with the ScouttOpp team — for candidates, employers, or general enquiries.',
+  title: 'Contact ScouttOpp — Candidate Support & Employer Access',
+  description: 'Get in touch with the ScouttOpp team. Candidate support, employer access requests, and general enquiries. We respond within 2 business days.',
+  alternates: { canonical: 'https://scouttopp.com/contact' },
 }
 
 interface ContactPageProps {
