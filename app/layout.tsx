@@ -6,7 +6,6 @@ import { Toaster } from '@/components/ui/toast'
 import { ThemeProvider } from '@/components/theme-provider'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { PostHogPageView } from '@/components/analytics/posthog-pageview'
-import { Analytics } from '@vercel/analytics/next'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -72,7 +71,6 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </PostHogProvider>
-        <Analytics />
       </body>
     </html>
   )
